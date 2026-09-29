@@ -1,0 +1,30 @@
+<!-- 입력한 글의 글자 수를 버튼으로 세어 보여 주는 한 페이지짜리 도구 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>글자 수 세기</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    textarea { width: 100%; height: 160px; box-sizing: border-box; padding: 8px; font-size: 16px; }
+    button { margin-top: 8px; padding: 8px 20px; font-size: 16px; cursor: pointer; }
+    #result { margin-top: 16px; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <h1>글자 수 세기</h1>
+  <textarea id="input" placeholder="여기에 글을 적어 주세요."></textarea>
+  <button id="count-btn">글자 수 세기</button>
+  <p id="result"></p>
+
+  <script>
+    document.getElementById('count-btn').addEventListener('click', function () {
+      var text = document.getElementById('input').value;
+      // 이모지 같은 특수 문자도 한 글자로 세기 위해 배열로 펼쳐서 센다.
+      var count = Array.from(text).length;
+      document.getElementById('result').textContent = '글자 수 ' + count + '자';
+    });
+  </script>
+</body>
+</html>
