@@ -220,7 +220,7 @@ const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").repla
 function loadSpec(){
   const m = location.hash.match(/spec=([^&]+)/);
   if (m){ try { return JSON.parse(b64d(m[1])); } catch(e){ console.warn("spec 해석 실패", e); } }
-  try { const s = localStorage.getItem("reelSpec"); if (s) return JSON.parse(s); } catch(e){}
+  try { const s = localStorage.getItem("museumReelSpec"); if (s) return JSON.parse(s); } catch(e){}
   return DEMO;
 }
 function normalize(s){
@@ -300,11 +300,11 @@ function setMsg(t, err){ msg.textContent = t; msg.classList.toggle("err", !!err)
 $("#edit").onclick = () => { ta.value = JSON.stringify(SPEC, null, 2); $("#drawer").classList.add("open"); };
 $("#close").onclick = () => $("#drawer").classList.remove("open");
 $("#apply").onclick = () => { try { SPEC = JSON.parse(ta.value); } catch(e){ return setMsg("JSON 오류: "+e.message, true); }
-  location.hash = "spec=" + b64e(JSON.stringify(SPEC)); try{ localStorage.setItem("reelSpec", JSON.stringify(SPEC)); }catch(e){}
+  location.hash = "spec=" + b64e(JSON.stringify(SPEC)); try{ localStorage.setItem("museumReelSpec", JSON.stringify(SPEC)); }catch(e){}
   start(); setMsg("적용 완료. 주소창의 #spec 갱신."); };
 $("#copyUrl").onclick = async () => { await navigator.clipboard.writeText(location.href); setMsg("공유 주소를 복사했다."); };
 $("#copyJson").onclick = async () => { await navigator.clipboard.writeText(JSON.stringify(SPEC, null, 2)); setMsg("JSON을 복사했다."); };
-$("#reset").onclick = () => { SPEC = JSON.parse(JSON.stringify(DEMO)); ta.value = JSON.stringify(SPEC,null,2); history.replaceState(null,"",location.pathname); try{localStorage.removeItem("reelSpec")}catch(e){} start(); setMsg("견본으로 되돌렸다."); };
+$("#reset").onclick = () => { SPEC = JSON.parse(JSON.stringify(DEMO)); ta.value = JSON.stringify(SPEC,null,2); history.replaceState(null,"",location.pathname); try{localStorage.removeItem("museumReelSpec")}catch(e){} start(); setMsg("견본으로 되돌렸다."); };
 window.addEventListener("hashchange", () => { SPEC = loadSpec(); start(); });
 
 /* ───────── 5. 시작: 이미지 프리로드 후 재생 ───────── */
