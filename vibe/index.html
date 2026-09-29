@@ -19,14 +19,16 @@
   <p id="result"></p>
 
   <script>
-    document.getElementById('count-btn').addEventListener('click', function () {
+    function updateCount() {
       var text = document.getElementById('input').value;
       // 이모지 같은 특수 문자도 한 글자로 세기 위해 배열로 펼쳐서 센다.
       var withSpace = Array.from(text).length;
       var withoutSpace = Array.from(text.replace(/\s/g, '')).length;
       document.getElementById('result').innerHTML =
         '공백 포함 ' + withSpace + '자<br>공백 제외 ' + withoutSpace + '자';
-    });
+    }
+    document.getElementById('count-btn').addEventListener('click', updateCount);
+    document.getElementById('input').addEventListener('input', updateCount);
   </script>
 </body>
 </html>
