@@ -154,12 +154,4 @@ SaaS 기반 AI 커스터마이징 기술이 사용된 스마트기기 케이스 
 
 ---
 
-## 📊 GitHub 통계 (GitHub Stats)
-
-[![GitHub 통계](https://github-stats-extended.vercel.app/api?username=kjwzone&show_icons=true&theme=default&hide_border=true)](https://github.com/kjwzone)
-
-[![사용 언어 통계](https://github-stats-extended.vercel.app/api/top-langs/?username=kjwzone&layout=compact&theme=default&hide_border=true)](https://github.com/kjwzone?tab=repositories)
-
----
-
 **강의·컨설팅·공동연구·프로젝트 협업 문의:** petezone@naver.com
