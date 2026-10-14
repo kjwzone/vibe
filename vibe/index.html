@@ -25,8 +25,9 @@
     button { padding: 9px 18px; border-radius: 4px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
     #count-btn { border: 1px solid var(--green); background: var(--green); color: #fff; }
     #count-btn:hover { background: var(--green-dark); border-color: var(--green-dark); }
-    #clear-btn { border: 1px solid var(--line); background: #fff; color: var(--muted); }
-    #clear-btn:hover { border-color: var(--muted); color: var(--text); }
+    #clear-btn, #copy-btn { border: 1px solid var(--line); background: #fff; color: var(--muted); }
+    #clear-btn:hover, #copy-btn:hover { border-color: var(--muted); color: var(--text); }
+    #clear-btn:disabled, #copy-btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--line); color: var(--muted); }
     button:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 2px; }
     #result { margin-top: 28px; font-size: 20px; }
     .over { color: red; }
@@ -38,7 +39,8 @@
     <textarea id="input" placeholder="여기에 글을 적어 주세요."></textarea>
     <div class="toolbar">
       <label>제한 글자 수 <input id="limit" type="number" min="0" placeholder="예: 100"></label>
-      <button id="clear-btn">전체 지우기</button>
+      <button id="copy-btn" disabled>복사하기</button>
+      <button id="clear-btn" disabled>전체 지우기</button>
       <button id="count-btn">글자 수 세기</button>
     </div>
   </div>
@@ -64,6 +66,9 @@
       }
       var bytesWithSpace = countBytes(text);
       var bytesWithoutSpace = countBytes(text.replace(/\s/g, ''));
+      // 입력이 비어 있으면 복사·지우기 버튼을 쓸 수 없게 한다.
+      document.getElementById('copy-btn').disabled = !text;
+      document.getElementById('clear-btn').disabled = !text;
       var limit = parseInt(document.getElementById('limit').value, 10);
       function num(n) {
         return '<span' + (!isNaN(limit) && n > limit ? ' class="over"' : '') + '>' + n + '</span>';
@@ -75,6 +80,22 @@
     }
     document.getElementById('count-btn').addEventListener('click', updateCount);
     document.getElementById('input').addEventListener('input', updateCount);
+    function copyText() {
+      var input = document.getElementById('input');
+      var btn = document.getElementById('copy-btn');
+      function showCopied() {
+        btn.textContent = '복사됨';
+        setTimeout(function () { btn.textContent = '복사하기'; }, 1500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(showCopied);
+      } else {
+        input.select();
+        document.execCommand('copy');
+        showCopied();
+      }
+    }
+    document.getElementById('copy-btn').addEventListener('click', copyText);
     document.getElementById('clear-btn').addEventListener('click', function () {
       document.getElementById('input').value = '';
       updateCount();
