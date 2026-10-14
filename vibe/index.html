@@ -31,6 +31,12 @@
     button:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 2px; }
     #result { margin-top: 28px; font-size: 20px; }
     .over { color: red; }
+    /* 좁은 화면에서는 결과 한 줄이 줄바꿈되지 않도록 글자를 줄이고, 버튼을 한 줄에 모은다. */
+    @media (max-width: 480px) {
+      #result { font-size: 16px; }
+      .toolbar label { flex-basis: 100%; }
+      button { padding: 9px 12px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
