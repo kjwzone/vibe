@@ -31,11 +31,11 @@
     button:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 2px; }
     /* 6열 격자에서 글자 수 2장(각 3칸), 단어·단락·문장 3장(각 2칸), Byte 2장(각 3칸), 읽는 시간·가독성 점수·가독성 등급 3장(각 2칸)으로 배치한다. */
     #result { margin-top: 28px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-    .stat { grid-column: span 2; padding: 14px 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .stat { grid-column: span 2; padding: 14px 6px; border: 1px solid #cfeedd; border-radius: 8px; background: #f0fbf5; }
     .stat:nth-child(-n+2), .stat:nth-child(6), .stat:nth-child(7) { grid-column: span 3; }
     .note { margin: 14px 0 40px; font-size: 12px; line-height: 1.5; color: var(--muted); }
     .stat-label { font-size: 13px; color: var(--muted); }
-    .stat-num { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; word-break: break-all; }
+    .stat-num { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; word-break: break-all; color: var(--green-dark); }
     .over { color: red; }
     /* 좁은 화면에서는 카드 글자를 줄이고, 버튼을 한 줄에 모은다. */
     @media (max-width: 480px) {
