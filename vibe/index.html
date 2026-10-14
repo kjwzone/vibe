@@ -52,6 +52,10 @@
       var withoutSpace = Array.from(text.replace(/\s/g, '')).length;
       // 공백·줄바꿈으로 나눈 덩어리 중 빈 것은 빼고 단어 수로 센다.
       var words = text.split(/\s+/).filter(Boolean).length;
+      // 비어 있지 않은 줄을 단락으로 센다.
+      var paragraphs = text.split(/\n+/).filter(function (p) { return p.trim(); }).length;
+      // 마침표·물음표·느낌표 뒤에 공백이나 끝이 오거나 줄이 바뀌면 문장이 끝난 것으로 센다.
+      var sentences = text.split(/[.!?…]+(?:\s+|$)|\n+/).filter(function (s) { return s.trim(); }).length;
       // 한글은 한 글자당 2바이트, 그 외 문자는 1바이트로 센다.
       function countBytes(s) {
         return Array.from(s).reduce(function (sum, ch) {
@@ -66,7 +70,7 @@
       }
       document.getElementById('result').innerHTML =
         '공백 포함 ' + num(withSpace) + '자 · 공백 제외 ' + num(withoutSpace) + '자' +
-        '<br>단어 수 ' + words + '개' +
+        '<br>단어 수 ' + words + '개 · 단락 수 ' + paragraphs + '개 · 문장 수 ' + sentences + '개' +
         '<br>Byte 공백 포함 ' + bytesWithSpace + ' · 공백 제외 ' + bytesWithoutSpace;
     }
     document.getElementById('count-btn').addEventListener('click', updateCount);
