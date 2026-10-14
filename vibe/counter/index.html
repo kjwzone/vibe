@@ -29,10 +29,10 @@
     #clear-btn:hover, #copy-btn:hover { border-color: var(--muted); color: var(--text); }
     #clear-btn:disabled, #copy-btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--line); color: var(--muted); }
     button:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 2px; }
-    /* 6열 격자에서 글자 수 2장(각 3칸), 단어·단락·문장 3장(각 2칸), Byte 2장(각 3칸), 읽는 시간·가독성 점수·가독성 등급 3장(각 2칸)으로 배치한다. */
+    /* 6열 격자에서 글자 수 2장(각 3칸), 단어·단락·문장 3장(각 2칸), 읽는 시간·가독성 점수·가독성 등급 3장(각 2칸)으로 배치한다. */
     #result { margin-top: 28px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
     .stat { grid-column: span 2; padding: 14px 6px; border: 1px solid #b5e6cb; border-radius: 8px; background: #e3f7ec; }
-    .stat:nth-child(-n+2), .stat:nth-child(6), .stat:nth-child(7) { grid-column: span 3; }
+    .stat:nth-child(-n+2) { grid-column: span 3; }
     .note { margin: 14px 0 40px; font-size: 12px; line-height: 1.5; color: var(--muted); }
     .stat-label { font-size: 13px; color: var(--muted); }
     .stat-num { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; word-break: break-all; color: var(--green-dark); }
@@ -73,14 +73,6 @@
       var paragraphs = text.split(/\n+/).filter(function (p) { return p.trim(); }).length;
       // 마침표·물음표·느낌표 뒤에 공백이나 끝이 오거나 줄이 바뀌면 문장이 끝난 것으로 센다.
       var sentences = text.split(/[.!?…]+(?:\s+|$)|\n+/).filter(function (s) { return s.trim(); }).length;
-      // 한글은 한 글자당 2바이트, 그 외 문자는 1바이트로 센다.
-      function countBytes(s) {
-        return Array.from(s).reduce(function (sum, ch) {
-          return sum + (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(ch) ? 2 : 1);
-        }, 0);
-      }
-      var bytesWithSpace = countBytes(text);
-      var bytesWithoutSpace = countBytes(text.replace(/\s/g, ''));
       // 입력이 비어 있으면 복사·지우기 버튼을 쓸 수 없게 한다.
       document.getElementById('copy-btn').disabled = !text;
       document.getElementById('clear-btn').disabled = !text;
@@ -135,8 +127,6 @@
         makeCard('단어 수', words, false) +
         makeCard('단락 수', paragraphs, false) +
         makeCard('문장 수', sentences, false) +
-        makeCard('Byte (공백 포함)', bytesWithSpace, false) +
-        makeCard('Byte (공백 제외)', bytesWithoutSpace, false) +
         makeCard('읽는 시간', readText, false) +
         makeCard('가독성 점수', readScore, false) +
         makeCard('가독성 등급', readGrade, false);
