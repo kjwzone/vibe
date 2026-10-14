@@ -50,12 +50,24 @@
       // 이모지 같은 특수 문자도 한 글자로 세기 위해 배열로 펼쳐서 센다.
       var withSpace = Array.from(text).length;
       var withoutSpace = Array.from(text.replace(/\s/g, '')).length;
+      // 공백·줄바꿈으로 나눈 덩어리 중 빈 것은 빼고 단어 수로 센다.
+      var words = text.split(/\s+/).filter(Boolean).length;
+      // 한글은 한 글자당 2바이트, 그 외 문자는 1바이트로 센다.
+      function countBytes(s) {
+        return Array.from(s).reduce(function (sum, ch) {
+          return sum + (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(ch) ? 2 : 1);
+        }, 0);
+      }
+      var bytesWithSpace = countBytes(text);
+      var bytesWithoutSpace = countBytes(text.replace(/\s/g, ''));
       var limit = parseInt(document.getElementById('limit').value, 10);
       function num(n) {
         return '<span' + (!isNaN(limit) && n > limit ? ' class="over"' : '') + '>' + n + '</span>';
       }
       document.getElementById('result').innerHTML =
-        '공백 포함 ' + num(withSpace) + '자 · 공백 제외 ' + num(withoutSpace) + '자';
+        '공백 포함 ' + num(withSpace) + '자 · 공백 제외 ' + num(withoutSpace) + '자' +
+        '<br>단어 수 ' + words + '개' +
+        '<br>Byte 공백 포함 ' + bytesWithSpace + ' · 공백 제외 ' + bytesWithoutSpace;
     }
     document.getElementById('count-btn').addEventListener('click', updateCount);
     document.getElementById('input').addEventListener('input', updateCount);
