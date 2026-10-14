@@ -22,10 +22,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - name: index.html만 배포 폴더로 복사
+      - name: counter 폴더의 index.html만 배포 폴더로 복사
         run: |
-          mkdir _site
-          cp vibe/index.html _site/index.html
+          mkdir -p _site/counter
+          cp vibe/counter/index.html _site/counter/index.html
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
