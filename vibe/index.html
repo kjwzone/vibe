@@ -29,11 +29,15 @@
     #clear-btn:hover, #copy-btn:hover { border-color: var(--muted); color: var(--text); }
     #clear-btn:disabled, #copy-btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--line); color: var(--muted); }
     button:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 2px; }
-    #result { margin-top: 28px; font-size: 20px; }
+    #result { margin-top: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat { padding: 14px 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .stat-label { font-size: 13px; color: var(--muted); }
+    .stat-num { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; word-break: break-all; }
     .over { color: red; }
-    /* 좁은 화면에서는 결과 한 줄이 줄바꿈되지 않도록 글자를 줄이고, 버튼을 한 줄에 모은다. */
+    /* 좁은 화면에서는 카드를 2열로 줄이고, 버튼을 한 줄에 모은다. */
     @media (max-width: 480px) {
-      #result { font-size: 16px; }
+      #result { grid-template-columns: repeat(2, 1fr); }
+      .stat-num { font-size: 22px; }
       .toolbar label { flex-basis: 100%; }
       button { padding: 9px 12px; font-size: 14px; }
     }
@@ -50,7 +54,7 @@
       <button id="count-btn">글자 수 세기</button>
     </div>
   </div>
-  <p id="result"></p>
+  <div id="result"></div>
 
   <script>
     function updateCount() {
@@ -76,13 +80,20 @@
       document.getElementById('copy-btn').disabled = !text;
       document.getElementById('clear-btn').disabled = !text;
       var limit = parseInt(document.getElementById('limit').value, 10);
-      function num(n) {
-        return '<span' + (!isNaN(limit) && n > limit ? ' class="over"' : '') + '>' + n + '</span>';
+      // 지표 하나를 카드로 만든다. checkLimit이 true이고 제한을 넘으면 숫자를 빨갛게 한다.
+      function makeCard(label, n, checkLimit) {
+        var over = checkLimit && !isNaN(limit) && n > limit;
+        return '<div class="stat"><div class="stat-label">' + label + '</div>' +
+          '<div class="stat-num' + (over ? ' over' : '') + '">' + n.toLocaleString('ko-KR') + '</div></div>';
       }
       document.getElementById('result').innerHTML =
-        '공백 포함 ' + num(withSpace) + '자 · 공백 제외 ' + num(withoutSpace) + '자' +
-        '<br>단어 수 ' + words + '개 · 단락 수 ' + paragraphs + '개 · 문장 수 ' + sentences + '개' +
-        '<br>Byte 공백 포함 ' + bytesWithSpace + ' · 공백 제외 ' + bytesWithoutSpace;
+        makeCard('글자 수 (공백 포함)', withSpace, true) +
+        makeCard('글자 수 (공백 제외)', withoutSpace, true) +
+        makeCard('단어 수', words, false) +
+        makeCard('단락 수', paragraphs, false) +
+        makeCard('문장 수', sentences, false) +
+        makeCard('Byte (공백 포함)', bytesWithSpace, false) +
+        makeCard('Byte (공백 제외)', bytesWithoutSpace, false);
     }
     document.getElementById('count-btn').addEventListener('click', updateCount);
     document.getElementById('input').addEventListener('input', updateCount);
