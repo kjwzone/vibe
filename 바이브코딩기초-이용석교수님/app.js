@@ -5,13 +5,20 @@ const STORAGE_KEY = 'todos';
 const CATEGORIES = ['업무', '개인', '공부'];
 const CATEGORY_CLASS = { 업무: 'work', 개인: 'life', 공부: 'study' };
 
+const FILTER_ALL = '전체';
+
 let todos = [];
 let editingId = null;
+let activeFilter = FILTER_ALL;
 
 const form = document.querySelector('.add');
 const titleInput = document.getElementById('new-title');
 const categorySelect = document.getElementById('new-category');
 const listEl = document.querySelector('.todo-list');
+const tabsEl = document.querySelector('.tabs');
+const progressDone = document.getElementById('progress-done');
+const progressDetail = document.getElementById('progress-detail');
+const meterEl = document.querySelector('.meter');
 
 // 저장소
 
@@ -157,15 +164,73 @@ function createEditRow(todo) {
   return row;
 }
 
-function render() {
+function visibleTodos() {
+  return activeFilter === FILTER_ALL
+    ? todos
+    : todos.filter((todo) => todo.category === activeFilter);
+}
+
+function emptyMessage() {
+  if (todos.length === 0) return '할 일이 없습니다. 위에서 첫 할 일을 추가해 보세요.';
+  return activeFilter + ' 할 일이 없습니다.';
+}
+
+function renderList() {
+  const visible = visibleTodos();
+  if (visible.length === 0) {
+    listEl.replaceChildren(el('li', 'empty', emptyMessage()));
+    return;
+  }
   listEl.replaceChildren(
-    ...todos.map((todo) => (todo.id === editingId ? createEditRow(todo) : createViewRow(todo)))
+    ...visible.map((todo) => (todo.id === editingId ? createEditRow(todo) : createViewRow(todo)))
   );
   const editInput = listEl.querySelector('.todo-edit-title');
   if (editInput) {
     editInput.focus();
     editInput.select();
   }
+}
+
+function renderTabs() {
+  tabsEl.querySelectorAll('button').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.filter === activeFilter));
+  });
+}
+
+// 진행률은 저장하지 않고 매번 전체 목록에서 계산한다 (현재 탭과 무관)
+
+function countProgress(items) {
+  return { done: items.filter((todo) => todo.done).length, total: items.length };
+}
+
+function progressRatio(progress) {
+  return progress.total === 0 ? 0 : (progress.done / progress.total) * 100;
+}
+
+function renderProgress() {
+  const overall = countProgress(todos);
+  progressDone.textContent = overall.done;
+  progressDetail.textContent = '/' + overall.total + ' 완료 · ' + Math.round(progressRatio(overall)) + '%';
+
+  const byCategory = CATEGORIES.map((category) => countProgress(todos.filter((todo) => todo.category === category)));
+  CATEGORIES.forEach((category, index) => {
+    const key = CATEGORY_CLASS[category];
+    const progress = byCategory[index];
+    const segment = meterEl.querySelector('.seg-' + key);
+    segment.style.setProperty('--total', overall.total === 0 ? 1 : progress.total);
+    segment.style.setProperty('--done', progressRatio(progress) + '%');
+    document.querySelector('.legend-' + key + ' .count').textContent = progress.done + '/' + progress.total;
+  });
+  meterEl.setAttribute(
+    'aria-label',
+    CATEGORIES.map((category, index) => category + ' ' + byCategory[index].done + '/' + byCategory[index].total).join(', ') + ' 완료'
+  );
+}
+
+function render() {
+  renderProgress();
+  renderTabs();
+  renderList();
 }
 
 // 사용자 입력 처리
@@ -189,6 +254,14 @@ form.addEventListener('submit', (event) => {
     titleInput.value = '';
   }
   titleInput.focus();
+});
+
+tabsEl.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-filter]');
+  if (!button) return;
+  activeFilter = button.dataset.filter;
+  editingId = null;
+  render();
 });
 
 listEl.addEventListener('click', (event) => {

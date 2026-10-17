@@ -13,16 +13,16 @@
 
     <!-- 진행률 영역 (F6, F7) -->
     <section class="progress" aria-label="진행률">
-      <p class="progress-total"><strong>1</strong><span>/3 완료 · 33%</span></p>
-      <div class="meter" role="img" aria-label="업무 0개, 개인 1개, 공부 0개 완료">
+      <p class="progress-total"><strong id="progress-done">0</strong><span id="progress-detail">/0 완료 · 0%</span></p>
+      <div class="meter" role="img" aria-label="업무 0/0, 개인 0/0, 공부 0/0 완료">
         <span class="seg seg-work" style="--total: 1; --done: 0%"><i></i></span>
-        <span class="seg seg-life" style="--total: 1; --done: 100%"><i></i></span>
+        <span class="seg seg-life" style="--total: 1; --done: 0%"><i></i></span>
         <span class="seg seg-study" style="--total: 1; --done: 0%"><i></i></span>
       </div>
       <ul class="legend">
-        <li class="legend-work"><span class="dot"></span>업무 0/1</li>
-        <li class="legend-life"><span class="dot"></span>개인 1/1</li>
-        <li class="legend-study"><span class="dot"></span>공부 0/1</li>
+        <li class="legend-work"><span class="dot"></span>업무 <span class="count">0/0</span></li>
+        <li class="legend-life"><span class="dot"></span>개인 <span class="count">0/0</span></li>
+        <li class="legend-study"><span class="dot"></span>공부 <span class="count">0/0</span></li>
       </ul>
     </section>
 
@@ -41,10 +41,10 @@
 
     <!-- 카테고리 탭 (F5) -->
     <nav class="tabs" aria-label="카테고리 필터">
-      <button type="button" aria-pressed="true">전체</button>
-      <button type="button" aria-pressed="false">업무</button>
-      <button type="button" aria-pressed="false">개인</button>
-      <button type="button" aria-pressed="false">공부</button>
+      <button type="button" data-filter="전체" aria-pressed="true">전체</button>
+      <button type="button" data-filter="업무" aria-pressed="false">업무</button>
+      <button type="button" data-filter="개인" aria-pressed="false">개인</button>
+      <button type="button" data-filter="공부" aria-pressed="false">공부</button>
     </nav>
 
     <!-- 할 일 목록 -->

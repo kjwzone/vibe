@@ -270,6 +270,12 @@ select:focus-visible {
   color: var(--ink-soft);
 }
 
+.empty {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+
 /* 수정 중인 행 */
 .todo.is-editing {
   grid-template-columns: 1fr auto;
