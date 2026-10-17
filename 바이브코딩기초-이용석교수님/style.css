@@ -259,6 +259,35 @@ select:focus-visible {
   color: var(--ink);
 }
 
+.todo-actions button:disabled,
+.todo-check:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.todo-actions button:disabled:hover {
+  background: none;
+  color: var(--ink-soft);
+}
+
+/* 수정 중인 행 */
+.todo.is-editing {
+  grid-template-columns: 1fr auto;
+}
+
+.todo-edit-title,
+.todo-edit-category {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+}
+
+.is-editing .todo-actions {
+  grid-column: 1 / -1;
+}
+
 /* 좁은 화면 */
 @media (max-width: 440px) {
   .add {
