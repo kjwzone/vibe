@@ -1,0 +1,86 @@
+<!-- 할 일 관리 앱의 화면 구조를 정의하는 HTML 문서 -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>할 일 관리</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1 class="app-title">오늘 할 일</h1>
+
+    <!-- 진행률 영역 (F6, F7) -->
+    <section class="progress" aria-label="진행률">
+      <p class="progress-total"><strong>1</strong><span>/3 완료 · 33%</span></p>
+      <div class="meter" role="img" aria-label="업무 0개, 개인 1개, 공부 0개 완료">
+        <span class="seg seg-work" style="--total: 1; --done: 0%"><i></i></span>
+        <span class="seg seg-life" style="--total: 1; --done: 100%"><i></i></span>
+        <span class="seg seg-study" style="--total: 1; --done: 0%"><i></i></span>
+      </div>
+      <ul class="legend">
+        <li class="legend-work"><span class="dot"></span>업무 0/1</li>
+        <li class="legend-life"><span class="dot"></span>개인 1/1</li>
+        <li class="legend-study"><span class="dot"></span>공부 0/1</li>
+      </ul>
+    </section>
+
+    <!-- 입력 영역 (F1) -->
+    <form class="add" autocomplete="off">
+      <label class="visually-hidden" for="new-title">새 할 일</label>
+      <input id="new-title" class="add-title" type="text" placeholder="새 할 일을 입력하세요">
+      <label class="visually-hidden" for="new-category">카테고리</label>
+      <select id="new-category" class="add-category">
+        <option>업무</option>
+        <option>개인</option>
+        <option>공부</option>
+      </select>
+      <button class="add-button" type="submit">추가</button>
+    </form>
+
+    <!-- 카테고리 탭 (F5) -->
+    <nav class="tabs" aria-label="카테고리 필터">
+      <button type="button" aria-pressed="true">전체</button>
+      <button type="button" aria-pressed="false">업무</button>
+      <button type="button" aria-pressed="false">개인</button>
+      <button type="button" aria-pressed="false">공부</button>
+    </nav>
+
+    <!-- 할 일 목록 -->
+    <ul class="todo-list">
+      <!-- 임시 예시 항목: 데이터 로직을 붙일 때 제거한다 -->
+      <li class="todo">
+        <input class="todo-check" type="checkbox" aria-label="보고서 초안 쓰기 완료">
+        <span class="todo-title">보고서 초안 쓰기</span>
+        <span class="badge badge-work">업무</span>
+        <span class="todo-actions">
+          <button type="button">수정</button>
+          <button type="button">삭제</button>
+        </span>
+      </li>
+      <li class="todo is-done">
+        <input class="todo-check" type="checkbox" checked aria-label="장보기 완료">
+        <span class="todo-title">장보기</span>
+        <span class="badge badge-life">개인</span>
+        <span class="todo-actions">
+          <button type="button">수정</button>
+          <button type="button">삭제</button>
+        </span>
+      </li>
+      <li class="todo">
+        <input class="todo-check" type="checkbox" aria-label="영어 단어 30개 외우기 완료">
+        <span class="todo-title">영어 단어 30개 외우기</span>
+        <span class="badge badge-study">공부</span>
+        <span class="todo-actions">
+          <button type="button">수정</button>
+          <button type="button">삭제</button>
+        </span>
+      </li>
+      <!-- 임시 예시 항목 끝 -->
+    </ul>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
