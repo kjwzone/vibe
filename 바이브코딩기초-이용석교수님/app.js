@@ -289,7 +289,7 @@ listEl.addEventListener('change', (event) => {
 });
 
 listEl.addEventListener('keydown', (event) => {
-  if (!event.target.classList.contains('todo-edit-title')) return;
+  if (!event.target.classList.contains('todo-edit-title') || event.isComposing) return;
   if (event.key === 'Enter') {
     saveEdit(event.target.closest('.todo'));
   } else if (event.key === 'Escape') {
