@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>도서 메모 검색</title>
+<style>
+  body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  #count { color: #6b7280; margin: 0 0 16px; }
+  #query { width: 100%; box-sizing: border-box; font-size: 18px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+  ul { list-style: none; padding: 0; }
+  li { border-bottom: 1px solid #e5e7eb; padding: 12px 4px; }
+  .title { font-weight: 700; }
+  .author { color: #6b7280; margin-left: 8px; }
+  .memo { margin-top: 4px; }
+</style>
+</head>
+<body>
+  <h1>도서 메모 검색</h1>
+  <p id="count"></p>
+  <input id="query" type="text" placeholder="제목, 저자, 메모로 검색">
+  <ul id="list"></ul>
+
+  <script src="storage.js"></script>
+  <script src="filterNotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

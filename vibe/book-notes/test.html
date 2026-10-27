@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>도서 메모 검색 테스트</title>
+<style>
+  body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  #summary { font-size: 20px; font-weight: 700; margin: 12px 0 20px; }
+  .all-pass { color: #15803d; }
+  .has-fail { color: #b91c1c; }
+  ul { list-style: none; padding: 0; }
+  li { border-bottom: 1px solid #e5e7eb; padding: 10px 4px; }
+  .ok::before { content: "통과  "; color: #15803d; font-weight: 700; }
+  .fail::before { content: "실패  "; color: #b91c1c; font-weight: 700; }
+  .error { color: #6b7280; font-size: 14px; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <h1>도서 메모 검색 테스트</h1>
+  <p>filterNotes.js와 tests/filterNotes.test.js를 고친 뒤 이 페이지를 새로고침한다.</p>
+  <p id="summary"></p>
+  <ul id="results"></ul>
+
+  <script src="filterNotes.js"></script>
+  <script src="tests/mini-test.js"></script>
+  <script src="tests/filterNotes.test.js"></script>
+  <script>
+    var results = runTests();
+    var pass = results.filter(function (r) { return r.ok; }).length;
+    var summary = document.getElementById("summary");
+    summary.textContent = "전체 " + results.length + "개 중 통과 " + pass + "개, 실패 " + (results.length - pass) + "개";
+    summary.className = pass === results.length ? "all-pass" : "has-fail";
+    var list = document.getElementById("results");
+    results.forEach(function (r) {
+      var li = document.createElement("li");
+      li.className = r.ok ? "ok" : "fail";
+      li.appendChild(document.createTextNode(r.name));
+      if (!r.ok) {
+        var e = document.createElement("div");
+        e.className = "error";
+        e.textContent = r.error;
+        li.appendChild(e);
+      }
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>

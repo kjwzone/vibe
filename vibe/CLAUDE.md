@@ -11,6 +11,8 @@
 ## 테스트 명령
 - 자동 테스트 없음.
 - 수정 뒤 브라우저 새로고침으로 보통 글, 빈 입력, 아주 긴 글, 띄어쓰기와 줄바꿈 4가지를 확인한다
+- book-notes는 python, zzz, 빈 입력 3가지로 화면을 확인한다.
+- 도서 메모 검색은 node book-notes/tests/run-tests.js, Node가 없으면 book-notes/test.html을 연다.
 
 ## 코드 규칙
 - 순수 HTML, CSS, 자바스크립트만 쓴다.
