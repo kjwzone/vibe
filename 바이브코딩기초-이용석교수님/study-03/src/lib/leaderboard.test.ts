@@ -9,6 +9,7 @@ import {
   loadLeaderboard,
   saveLeaderboard,
   sortEntries,
+  submitEntry,
   validateNickname,
   type LeaderboardEntry,
 } from './leaderboard'
@@ -234,5 +235,50 @@ describe('저장소 입출력', () => {
     }
     expect(loadLeaderboard(broken)).toEqual([])
     expect(saveLeaderboard([entry(100, 1, at(1))], broken)).toBe(false)
+  })
+})
+
+describe('submitEntry (등록 절차)', () => {
+  const results: AnswerResult[] = [
+    { questionId: 'a', category: 'history', selectedIndex: 0, correct: true },
+    { questionId: 'b', category: 'science', selectedIndex: 0, correct: true },
+  ]
+
+  it('검사를 통과하면 저장하고 다시 읽을 수 있다', () => {
+    const storage = fakeStorage()
+    const now = new Date('2026-10-30T12:00:00.000Z')
+    const submitted = submitEntry({ rawNickname: ' 세종 ', results, durationSec: 90, now, storage })
+    expect(submitted.ok).toBe(true)
+    const loaded = loadLeaderboard(storage)
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0]).toMatchObject({ nickname: '세종', score: 20, durationSec: 90 })
+  })
+
+  it('닉네임이 잘못되면 아무것도 저장하지 않는다', () => {
+    const storage = fakeStorage()
+    const submitted = submitEntry({ rawNickname: '   ', results, durationSec: 90, storage })
+    expect(submitted.ok).toBe(false)
+    expect(storage.getItem(LEADERBOARD_KEY)).toBeNull()
+  })
+
+  it('저장소를 쓸 수 없으면 실패 메시지를 돌려준다', () => {
+    const submitted = submitEntry({ rawNickname: '세종', results, durationSec: 90, storage: null })
+    expect(submitted.ok).toBe(false)
+  })
+
+  it('기존 기록과 합쳐 정렬하고 같은 점수면 빠른 쪽이 위에 온다', () => {
+    const storage = fakeStorage()
+    const base = { rawNickname: '가나', results, storage }
+    submitEntry({ ...base, durationSec: 200, now: new Date('2026-10-30T12:00:00.000Z') })
+    submitEntry({ ...base, rawNickname: '다라', durationSec: 100, now: new Date('2026-10-30T12:01:00.000Z') })
+    expect(loadLeaderboard(storage).map((e) => e.nickname)).toEqual(['다라', '가나'])
+  })
+
+  it('50건이 가득 찬 상태에서 등록하면 50건을 유지한다', () => {
+    const full = Array.from({ length: MAX_ENTRIES }, (_, i) => entry(100 + i, 300, at(i)))
+    const storage = fakeStorage(JSON.stringify(full))
+    const submitted = submitEntry({ rawNickname: '새얼굴', results, durationSec: 90, storage })
+    expect(submitted.ok).toBe(true)
+    expect(loadLeaderboard(storage)).toHaveLength(MAX_ENTRIES)
   })
 })

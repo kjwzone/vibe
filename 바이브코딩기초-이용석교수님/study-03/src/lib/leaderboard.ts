@@ -157,3 +157,32 @@ export function saveLeaderboard(
     return false
   }
 }
+
+export type SubmitResult =
+  | { ok: true; entry: LeaderboardEntry; entries: LeaderboardEntry[] }
+  | { ok: false; message: string }
+
+// 닉네임 검사 → 기록 생성 → 저장까지 한 번에 처리한다 (저장 직전에 목록을 다시 읽는다)
+export function submitEntry(input: {
+  rawNickname: string
+  results: readonly AnswerResult[]
+  durationSec: number
+  now?: Date
+  storage?: StorageLike | null
+}): SubmitResult {
+  const check = validateNickname(input.rawNickname)
+  if (!check.ok) return { ok: false, message: check.message }
+
+  const storage = input.storage === undefined ? getStorage() : input.storage
+  const entry = buildEntry({
+    nickname: check.nickname,
+    results: input.results,
+    durationSec: input.durationSec,
+    now: input.now ?? new Date(),
+  })
+  const entries = addEntry(loadLeaderboard(storage), entry)
+  if (!saveLeaderboard(entries, storage)) {
+    return { ok: false, message: '기록을 저장하지 못했어요. 브라우저의 저장 공간을 확인해 주세요.' }
+  }
+  return { ok: true, entry, entries }
+}
