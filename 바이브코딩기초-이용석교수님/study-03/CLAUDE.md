@@ -25,21 +25,23 @@ npm run lint                         # oxlint
 
 ## 진행 상태
 
-1단계(뼈대, 문제 은행 40문제, 출제 함수)와 2단계(시작 → 40문제 → 결과 화면, F-01~F-07, F-09)까지 끝났다. 순위 기록(F-08), 순위표 화면, 시작 화면의 [순위표] 버튼, README는 3단계에서 만든다.
+1~3단계가 모두 끝났다. P0 기능 F-01~F-09가 구현되어 MVP가 완성된 상태이고, F-10 이후(오답 노트, 연습 모드, 타이머, 효과음, 공유, 온라인 순위표)는 범위 밖이다.
 
 ## 코드 구조
 
 - `src/data/questions.json` 문제 은행 40문제. 스키마는 PRD 8장.
 - `src/lib/questions.ts` 카테고리 조회와 섞기. `createGameRounds()`가 한 판 분량(라운드 4개 × 10문제)을 만든다. 난수 함수를 인자로 받아 테스트에서 시드를 고정할 수 있다.
 - `src/lib/scoring.ts` 총점, 카테고리별 점수, 정답률, 등급, 소요시간 계산과 표시 형식. 모두 순수 함수다.
-- `src/lib/gameReducer.ts` 게임 상태 전체를 `useReducer` 하나로 관리한다. 액션은 `START`, `ANSWER`, `NEXT` 세 개이고 현재 시각은 액션에 담아 받는다. 연타 방지는 `ANSWER`가 `playing` 단계일 때만 반영되는 것으로 보장한다.
+- `src/lib/gameReducer.ts` 게임 상태 전체를 `useReducer` 하나로 관리한다. 액션은 `START`, `ANSWER`, `NEXT`, `OPEN_LEADERBOARD`, `CLOSE_LEADERBOARD`, `REGISTER`이고 현재 시각은 액션에 담아 받는다. 연타 방지는 `ANSWER`가 `playing` 단계일 때만 반영되는 것으로 보장하고, 순위 등록은 한 판에 한 번만(`registeredAt`) 반영한다. 순위표는 `leaderboard` 단계이며 `returnTo`에 돌아갈 화면을 기억한다.
+- `src/lib/leaderboard.ts` 닉네임 검사, 정렬, 50건 제한, 순위 계산, `quiz_leaderboard` 입출력. 저장소 접근은 모두 예외를 삼키고 빈 목록·실패값으로 돌려준다. 화면 코드는 저장소를 직접 만지지 않고 `submitEntry`, `loadLeaderboard`를 쓴다.
 - `src/App.tsx` 단계(`phase`)에 따라 `src/screens`의 화면을 고른다. 키보드(1~4, Enter)는 `QuestionScreen`과 `RoundEndScreen`이 각자 `window`에 등록한다.
+- `src/screens` 시작, 문제, 라운드 결과, 결과(닉네임 등록 포함), 순위표 화면.
 - `src/index.css` 스타일 전부. 색과 크기는 `:root`의 CSS 변수로 정의한다.
 - 테스트는 `src/lib/*.test.ts`에 있다. 문제를 추가·수정하면 `questions.test.ts`로 먼저 확인한다.
 
 ## 아키텍처 핵심 (PRD 기준)
 
-- **게임 상태 머신** 단계는 `start → playing → feedback → roundEnd → result`이다. 라운드 10문제가 끝나면 `roundEnd`, 40문제가 끝나면 `result`로 간다. 프롬프트는 `useReducer` 하나로 관리하도록 정했다.
+- **게임 상태 머신** 단계는 `start → playing → feedback → roundEnd → result`이다. 라운드 10문제가 끝나면 `roundEnd`, 40문제가 끝나면 `result`로 간다. 순위표(`leaderboard`)는 `start`와 `result`에서만 열 수 있다. 프롬프트는 `useReducer` 하나로 관리하도록 정했다.
 - **라운드 순서** 한국사 → 과학 → 지리 → 일반상식으로 고정이다. 섞는 것은 라운드 안의 문제 순서와 보기 순서뿐이다.
 - **보기 섞기 주의** `answerIndex`는 원본 기준 위치다. 보기를 섞은 뒤에는 정답 위치를 다시 계산해야 하고, 이것이 F-02의 수용 기준이다.
 - **순수 함수 분리** 점수, 정답률, 등급, 순위 정렬은 UI와 분리한 순수 함수로 두고 단위 테스트를 반드시 작성한다(PRD 9장). 프롬프트상 위치는 `src/lib/scoring.ts`, `src/lib/questions.ts`이다.
