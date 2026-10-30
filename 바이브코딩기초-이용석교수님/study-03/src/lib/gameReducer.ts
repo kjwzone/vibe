@@ -2,7 +2,10 @@
 import type { Question } from './questions'
 import type { AnswerResult } from './scoring'
 
-export type Phase = 'start' | 'playing' | 'feedback' | 'roundEnd' | 'result'
+export type Phase = 'start' | 'playing' | 'feedback' | 'roundEnd' | 'result' | 'leaderboard'
+
+// 순위표를 닫으면 돌아갈 화면
+export type ReturnPhase = 'start' | 'result'
 
 export interface GameState {
   phase: Phase
@@ -13,12 +16,18 @@ export interface GameState {
   results: AnswerResult[]
   startedAt: number | null
   finishedAt: number | null
+  returnTo: ReturnPhase
+  // 이번 판 기록을 순위표에 등록했다면 그 기록 시각(playedAt), 아니면 null
+  registeredAt: string | null
 }
 
 export type GameAction =
   | { type: 'START'; rounds: Question[][]; now: number }
   | { type: 'ANSWER'; optionIndex: number; now: number }
   | { type: 'NEXT' }
+  | { type: 'OPEN_LEADERBOARD' }
+  | { type: 'CLOSE_LEADERBOARD' }
+  | { type: 'REGISTER'; playedAt: string }
 
 export const initialState: GameState = {
   phase: 'start',
@@ -29,6 +38,8 @@ export const initialState: GameState = {
   results: [],
   startedAt: null,
   finishedAt: null,
+  returnTo: 'start',
+  registeredAt: null,
 }
 
 export function getCurrentQuestion(state: GameState): Question | null {
@@ -118,5 +129,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       return state
     }
+
+    // 순위표는 시작 화면과 결과 화면에서만 열 수 있고, 열기 전 상태는 그대로 보존한다
+    case 'OPEN_LEADERBOARD':
+      if (state.phase !== 'start' && state.phase !== 'result') return state
+      return { ...state, phase: 'leaderboard', returnTo: state.phase }
+
+    case 'CLOSE_LEADERBOARD':
+      if (state.phase !== 'leaderboard') return state
+      return { ...state, phase: state.returnTo }
+
+    // 등록은 결과 화면에서 한 판에 한 번만 반영한다
+    case 'REGISTER':
+      if (state.phase !== 'result' || state.registeredAt !== null) return state
+      return { ...state, registeredAt: action.playedAt }
   }
 }

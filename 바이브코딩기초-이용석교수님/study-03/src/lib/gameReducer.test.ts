@@ -188,3 +188,60 @@ describe('다시 하기', () => {
     expect(restarted.finishedAt).toBeNull()
   })
 })
+
+describe('순위표 열기·닫기·등록', () => {
+  function finished(): GameState {
+    let state = started(0)
+    for (let i = 0; i < 40; i++) {
+      state = gameReducer(answer(state, true, (i + 1) * 1000), { type: 'NEXT' })
+      if (state.phase === 'roundEnd') state = gameReducer(state, { type: 'NEXT' })
+    }
+    return state
+  }
+
+  it('시작 화면에서 열고 닫으면 시작 화면으로 돌아온다', () => {
+    const open = gameReducer(initialState, { type: 'OPEN_LEADERBOARD' })
+    expect(open.phase).toBe('leaderboard')
+    expect(gameReducer(open, { type: 'CLOSE_LEADERBOARD' }).phase).toBe('start')
+  })
+
+  it('결과 화면에서 열고 닫아도 결과와 등록 상태가 그대로다', () => {
+    const result = gameReducer(finished(), { type: 'REGISTER', playedAt: 'T1' })
+    expect(result.phase).toBe('result')
+    const back = run(result, { type: 'OPEN_LEADERBOARD' }, { type: 'CLOSE_LEADERBOARD' })
+    expect(back.phase).toBe('result')
+    expect(back.results).toHaveLength(40)
+    expect(back.registeredAt).toBe('T1')
+  })
+
+  it('문제를 푸는 중에는 순위표를 열 수 없다', () => {
+    const state = started()
+    expect(gameReducer(state, { type: 'OPEN_LEADERBOARD' })).toBe(state)
+  })
+
+  it('순위표가 열려 있지 않으면 닫기는 무시한다', () => {
+    const state = started()
+    expect(gameReducer(state, { type: 'CLOSE_LEADERBOARD' })).toBe(state)
+  })
+
+  it('등록은 결과 화면에서 한 번만 반영된다', () => {
+    const once = gameReducer(finished(), { type: 'REGISTER', playedAt: 'T1' })
+    const twice = gameReducer(once, { type: 'REGISTER', playedAt: 'T2' })
+    expect(twice.registeredAt).toBe('T1')
+  })
+
+  it('결과 화면이 아니면 등록을 받지 않는다', () => {
+    const state = started()
+    expect(gameReducer(state, { type: 'REGISTER', playedAt: 'T1' })).toBe(state)
+  })
+
+  it('다시 하기를 하면 등록 상태가 초기화된다', () => {
+    const registered = gameReducer(finished(), { type: 'REGISTER', playedAt: 'T1' })
+    const restarted = gameReducer(registered, {
+      type: 'START',
+      rounds: createGameRounds(() => 0.3),
+      now: 0,
+    })
+    expect(restarted.registeredAt).toBeNull()
+  })
+})
