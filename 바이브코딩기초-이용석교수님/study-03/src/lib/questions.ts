@@ -57,6 +57,11 @@ export function shuffleOptions(question: Question, random: Random = Math.random)
   return { ...question, options, answerIndex: options.indexOf(correctOption) }
 }
 
+// 한 판 분량(라운드 순서대로 4개)의 문제를 만든다
+export function createGameRounds(random: Random = Math.random): Question[][] {
+  return CATEGORIES.map((category) => getRoundQuestions(category, random))
+}
+
 // 한 라운드(카테고리)의 문제를 문제 순서와 보기 순서를 섞어 반환한다
 export function getRoundQuestions(
   category: Category,

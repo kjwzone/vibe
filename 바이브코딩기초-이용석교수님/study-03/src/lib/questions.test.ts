@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   CATEGORIES,
+  createGameRounds,
   getQuestionsByCategory,
   getRoundQuestions,
   questionBank,
@@ -85,6 +86,15 @@ describe('shuffleOptions', () => {
     const snapshot = JSON.parse(JSON.stringify(q))
     shuffleOptions(q, seededRandom(3))
     expect(q).toEqual(snapshot)
+  })
+})
+
+describe('createGameRounds', () => {
+  it('라운드 순서대로 4개 라운드, 라운드당 10문제를 만든다', () => {
+    const rounds = createGameRounds(seededRandom(5))
+    expect(rounds).toHaveLength(4)
+    expect(rounds.map((r) => r[0].category)).toEqual([...CATEGORIES])
+    expect(rounds.every((r) => r.length === 10)).toBe(true)
   })
 })
 
