@@ -65,10 +65,10 @@
   {
     "id": "HIS-008",
     "category": "history",
-    "question": "신라 때 불국사를 창건한 것으로 알려진 인물은?",
+    "question": "삼국유사에 따르면 불국사를 창건한 인물은?",
     "options": ["김유신", "장보고", "김대성", "최치원"],
     "answerIndex": 2,
-    "explanation": "김대성이 불국사와 석굴암을 세웠다고 전해진다. 두 곳 모두 유네스코 세계유산이다.",
+    "explanation": "삼국유사에 따르면 김대성이 불국사와 석굴암을 세웠다. 두 곳 모두 유네스코 세계유산이다.",
     "difficulty": "normal"
   },
   {
@@ -101,7 +101,7 @@
   {
     "id": "SCI-002",
     "category": "science",
-    "question": "태양계에서 가장 큰 행성은?",
+    "question": "태양계에서 지름과 질량이 모두 가장 큰 행성은?",
     "options": ["화성", "토성", "목성", "천왕성"],
     "answerIndex": 2,
     "explanation": "목성은 태양계 행성 중 질량과 지름이 가장 크다.",
@@ -182,28 +182,28 @@
   {
     "id": "GEO-001",
     "category": "geography",
-    "question": "세계에서 면적이 가장 넓은 나라는?",
+    "question": "면적 기준으로 세계에서 가장 넓은 나라는?",
     "options": ["캐나다", "중국", "미국", "러시아"],
     "answerIndex": 3,
-    "explanation": "러시아는 약 1,710만 km²로 면적이 세계에서 가장 넓다.",
+    "explanation": "러시아는 영토 면적이 세계에서 가장 넓은 나라다.",
     "difficulty": "easy"
   },
   {
     "id": "GEO-002",
     "category": "geography",
-    "question": "대한민국에서 가장 높은 산은?",
+    "question": "대한민국(남한)에서 해발고도가 가장 높은 산은?",
     "options": ["지리산", "설악산", "한라산", "태백산"],
     "answerIndex": 2,
-    "explanation": "제주도의 한라산은 해발 1,947m로 대한민국에서 가장 높다.",
+    "explanation": "제주도의 한라산은 해발 1,947m로 남한에서 가장 높다.",
     "difficulty": "easy"
   },
   {
     "id": "GEO-003",
     "category": "geography",
-    "question": "세계에서 가장 넓은 바다(대양)는?",
+    "question": "면적 기준으로 세계에서 가장 넓은 대양은?",
     "options": ["태평양", "대서양", "인도양", "북극해"],
     "answerIndex": 0,
-    "explanation": "태평양은 지구 표면의 약 3분의 1을 차지하는 가장 큰 대양이다.",
+    "explanation": "태평양은 지구 표면의 약 3분의 1을 차지하는, 면적이 가장 넓은 대양이다.",
     "difficulty": "easy"
   },
   {
@@ -227,10 +227,10 @@
   {
     "id": "GEO-006",
     "category": "geography",
-    "question": "아프리카에서 가장 넓은 사막은?",
+    "question": "면적 기준으로 아프리카에서 가장 넓은 사막은?",
     "options": ["고비 사막", "사하라 사막", "칼라하리 사막", "나미브 사막"],
     "answerIndex": 1,
-    "explanation": "사하라 사막은 아프리카 북부를 가로지르는 가장 넓은 사막이다. 고비는 아시아에 있다.",
+    "explanation": "사하라 사막은 아프리카 북부를 가로지르는, 아프리카에서 면적이 가장 넓은 사막이다. 고비는 아시아에 있다.",
     "difficulty": "normal"
   },
   {
@@ -239,7 +239,7 @@
     "question": "안데스산맥이 길게 뻗어 있는 대륙은?",
     "options": ["아프리카", "북아메리카", "남아메리카", "아시아"],
     "answerIndex": 2,
-    "explanation": "안데스산맥은 남아메리카 서쪽을 따라 약 7,000km 뻗은 세계에서 가장 긴 산맥이다.",
+    "explanation": "안데스산맥은 남아메리카 서쪽을 따라 약 7,000km 뻗은, 육지의 산맥 중 가장 긴 산맥이다.",
     "difficulty": "normal"
   },
   {
@@ -254,7 +254,7 @@
   {
     "id": "GEO-009",
     "category": "geography",
-    "question": "세계에서 가장 깊은 호수는?",
+    "question": "최대 수심 기준으로 세계에서 가장 깊은 호수는?",
     "options": ["빅토리아호", "바이칼호", "슈피리어호", "티티카카호"],
     "answerIndex": 1,
     "explanation": "러시아의 바이칼호는 최대 수심이 약 1,640m로 세계에서 가장 깊다.",
@@ -290,10 +290,10 @@
   {
     "id": "GEN-003",
     "category": "general",
-    "question": "일반적으로 무지개는 몇 가지 색으로 나눠 말할까?",
+    "question": "한국에서는 일반적으로 무지개를 몇 가지 색으로 나눠 말할까?",
     "options": ["5가지", "6가지", "7가지", "8가지"],
     "answerIndex": 2,
-    "explanation": "빨주노초파남보 일곱 가지 색으로 나눠 말하는 것이 일반적이다.",
+    "explanation": "한국에서는 빨주노초파남보 일곱 가지 색으로 나눠 말하는 것이 일반적이다. 문화권에 따라 다르게 나누기도 한다.",
     "difficulty": "easy"
   },
   {
@@ -347,7 +347,7 @@
     "question": "영화 '기생충'이 아카데미 시상식에서 작품상을 받은 해는?",
     "options": ["2018년", "2019년", "2020년", "2021년"],
     "answerIndex": 2,
-    "explanation": "기생충은 2020년 제92회 아카데미 시상식에서 외국어 영화 최초로 작품상을 받았다.",
+    "explanation": "기생충은 2020년 제92회 아카데미 시상식에서 비영어권 영화로는 최초로 작품상을 받았다.",
     "difficulty": "hard"
   },
   {
