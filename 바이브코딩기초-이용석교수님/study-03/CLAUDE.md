@@ -25,13 +25,17 @@ npm run lint                         # oxlint
 
 ## 진행 상태
 
-1단계(프로젝트 뼈대, 문제 은행 40문제, 출제 함수, 검증 테스트)까지 끝났다. `src/screens`, `src/components`는 비어 있고 `App.tsx`는 빈 화면이다. 게임 화면은 2단계, 순위 기록은 3단계에서 만든다.
+1단계(뼈대, 문제 은행 40문제, 출제 함수)와 2단계(시작 → 40문제 → 결과 화면, F-01~F-07, F-09)까지 끝났다. 순위 기록(F-08), 순위표 화면, 시작 화면의 [순위표] 버튼, README는 3단계에서 만든다.
 
 ## 코드 구조
 
-- `src/data/questions.json` 문제 은행 40문제. 스키마는 PRD 8장(`id, category, question, options, answerIndex, explanation, difficulty`).
-- `src/lib/questions.ts` JSON을 `Question[]`로 타입 지정하고, 카테고리별 조회(`getQuestionsByCategory`)와 섞기(`shuffle`, `shuffleOptions`, `getRoundQuestions`)를 제공한다. 난수 함수를 인자로 받아 테스트에서 시드 고정 난수를 넣을 수 있다.
-- `src/lib/questions.test.ts` 데이터 검증(40문제, 카테고리별 10문제, 난이도 4/4/2, id 중복, 보기 4개, 글자 수 제한)과 섞기 테스트를 함께 둔다. 문제를 추가·수정하면 이 테스트로 먼저 확인한다.
+- `src/data/questions.json` 문제 은행 40문제. 스키마는 PRD 8장.
+- `src/lib/questions.ts` 카테고리 조회와 섞기. `createGameRounds()`가 한 판 분량(라운드 4개 × 10문제)을 만든다. 난수 함수를 인자로 받아 테스트에서 시드를 고정할 수 있다.
+- `src/lib/scoring.ts` 총점, 카테고리별 점수, 정답률, 등급, 소요시간 계산과 표시 형식. 모두 순수 함수다.
+- `src/lib/gameReducer.ts` 게임 상태 전체를 `useReducer` 하나로 관리한다. 액션은 `START`, `ANSWER`, `NEXT` 세 개이고 현재 시각은 액션에 담아 받는다. 연타 방지는 `ANSWER`가 `playing` 단계일 때만 반영되는 것으로 보장한다.
+- `src/App.tsx` 단계(`phase`)에 따라 `src/screens`의 화면을 고른다. 키보드(1~4, Enter)는 `QuestionScreen`과 `RoundEndScreen`이 각자 `window`에 등록한다.
+- `src/index.css` 스타일 전부. 색과 크기는 `:root`의 CSS 변수로 정의한다.
+- 테스트는 `src/lib/*.test.ts`에 있다. 문제를 추가·수정하면 `questions.test.ts`로 먼저 확인한다.
 
 ## 아키텍처 핵심 (PRD 기준)
 
