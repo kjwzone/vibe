@@ -2,18 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 현재 상태
+## 프로젝트 개요
 
-이 폴더(`study-03`)에는 아직 코드가 없고 기획 문서 2개만 있다. 빌드·린트·테스트 명령어는 1단계에서 프로젝트를 만든 뒤 이 파일에 채운다.
+한국사·과학·지리·일반상식 4개 분야 40문제를 4지선다로 푸는 웹 퀴즈 게임이다. Vite + React + TypeScript로 만들고 테스트는 Vitest를 쓴다. 서버·DB 없는 정적 웹이다.
 
-- `상식 퀴즈 게임 PRD.md`는 기준 문서다. 규칙, 기능 ID(F-01~F-15), 데이터 스키마가 모두 여기에 있다.
-- `claude-code-3step-prompts.md`는 구현을 3단계(기반·데이터 → 게임 플레이 → 순위·마감)로 나눈 프롬프트다. 한 단계씩 실행하고 완료 기준을 확인한 뒤 다음으로 넘어간다.
-- 프롬프트 문서는 PRD를 `PRD.md`라는 이름으로 읽으라고 한다. 실제 파일명은 `상식 퀴즈 게임 PRD.md`이므로 이름을 맞추거나 경로를 명시한다.
+- `상식 퀴즈 게임 PRD.md`는 기준 문서다. 규칙, 기능 ID(F-01~F-15), 데이터 스키마가 모두 여기에 있다. 동작이 헷갈리면 PRD를 먼저 확인한다.
+- `claude-code-3step-prompts.md`는 구현을 3단계(기반·데이터 → 게임 플레이 → 순위·마감)로 나눈 프롬프트다. 한 단계씩 실행하고 완료 기준을 확인한 뒤 다음으로 넘어간다. 이 문서는 PRD를 `PRD.md`라고 부르지만 실제 파일명은 `상식 퀴즈 게임 PRD.md`다.
+- `checklist.md`는 단계별 진행 상황, `context-notes.md`는 결정과 그 이유다. 작업하면서 계속 갱신한다.
 - 상위 폴더(`../`)의 `index.html`, `app.js`, `PRD.md`는 다른 실습인 할 일 관리 앱이다. 이 프로젝트와 무관하므로 건드리지 않는다.
 
-## 기술 스택 (미확정)
+## 명령어
 
-프롬프트 문서의 기본값은 Vite + React + TypeScript + Vitest이다. 입문자 실습용으로 바꾸려면 "HTML·CSS·JavaScript 파일만, 빌드 도구 없음"으로 1단계 기술 스택 줄을 고친다. 어느 쪽인지 정해지면 이 절을 갱신한다. 어느 쪽이든 서버·DB 없는 정적 웹이고 문제 은행은 JSON 파일 1개다.
+```bash
+npm install
+npm run dev                          # 개발 서버
+npm test                             # Vitest 전체 실행 (vitest run)
+npx vitest run src/lib/questions.test.ts   # 파일 하나만 실행
+npx vitest run -t "shuffleOptions"         # 테스트 이름으로 실행
+npm run build                        # tsc -b 타입 검사 후 vite build
+npm run lint                         # oxlint
+```
+
+## 진행 상태
+
+1단계(프로젝트 뼈대, 문제 은행 40문제, 출제 함수, 검증 테스트)까지 끝났다. `src/screens`, `src/components`는 비어 있고 `App.tsx`는 빈 화면이다. 게임 화면은 2단계, 순위 기록은 3단계에서 만든다.
+
+## 코드 구조
+
+- `src/data/questions.json` 문제 은행 40문제. 스키마는 PRD 8장(`id, category, question, options, answerIndex, explanation, difficulty`).
+- `src/lib/questions.ts` JSON을 `Question[]`로 타입 지정하고, 카테고리별 조회(`getQuestionsByCategory`)와 섞기(`shuffle`, `shuffleOptions`, `getRoundQuestions`)를 제공한다. 난수 함수를 인자로 받아 테스트에서 시드 고정 난수를 넣을 수 있다.
+- `src/lib/questions.test.ts` 데이터 검증(40문제, 카테고리별 10문제, 난이도 4/4/2, id 중복, 보기 4개, 글자 수 제한)과 섞기 테스트를 함께 둔다. 문제를 추가·수정하면 이 테스트로 먼저 확인한다.
 
 ## 아키텍처 핵심 (PRD 기준)
 
