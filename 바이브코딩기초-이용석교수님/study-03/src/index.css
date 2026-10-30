@@ -1,3 +1,438 @@
+/* 전체 화면 공통 스타일, 답안지(OMR) 느낌의 색과 보기 버블을 정의한다 */
+
+:root {
+  --paper: #eef1f7;
+  --card: #ffffff;
+  --ink: #14213d;
+  --ink-soft: #4a5670;
+  --line: #c4cde0;
+  --track: #d5dbea;
+  --accent: #2547d0;
+  --ok: #0b6b3f;
+  --ok-bg: #e1f3e8;
+  --bad: #b3261e;
+  --bad-bg: #fbe6e4;
+
+  font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo',
+    system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+  word-break: keep-all;
+}
+
+h1,
+h2,
+p,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 20px 16px 56px;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* 공통 요소 */
+
+.title {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  color: var(--ink-soft);
+}
+
+.eyebrow {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.key-hint {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.btn {
+  min-height: 52px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #1b37a8;
+}
+
+/* 답안지 버블 */
+
+.bubble {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  background: transparent;
+}
+
+.bubble-filled {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* 시작 화면 */
+
+.omr-row {
+  display: flex;
+  gap: 10px;
+}
+
+.start .bubble {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.rules li::marker {
+  color: var(--accent);
+}
+
+/* 진행 표시 */
+
+.progress {
+  width: 100%;
+}
+
+.progress-info {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.progress-round {
+  font-weight: 700;
+}
+
+.progress-count {
+  color: var(--ink-soft);
+}
+
+.progress-count strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.progress-score {
+  text-align: right;
+  font-weight: 700;
+}
+
+.progress-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.progress-segment {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--track);
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progress-fill {
+    transition: width 0.25s ease-out;
+  }
+}
+
+/* 문제와 보기 */
+
+.question-text {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.option-text {
+  flex: 1;
+}
+
+.option-tag {
+  flex: none;
+  padding: 1px 10px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.option.option-correct {
+  border-color: var(--ok);
+  background: var(--ok-bg);
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.option.option-correct .bubble {
+  border-color: var(--ok);
+  background: var(--ok);
+  color: #ffffff;
+}
+
+.option.option-wrong {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+  color: var(--bad);
+  font-weight: 700;
+}
+
+.option.option-wrong .bubble {
+  border-color: var(--bad);
+  background: var(--bad);
+  color: #ffffff;
+}
+
+.option.option-dim {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+}
+
+.option.option-dim .bubble {
+  border-color: var(--ink-soft);
+  color: var(--ink-soft);
+}
+
+/* 피드백 */
+
+.feedback-region {
+  width: 100%;
+}
+
+.feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-left: 6px solid;
+  border-radius: 4px 14px 14px 4px;
+  background: var(--card);
+}
+
+.feedback-correct {
+  border-color: var(--ok);
+}
+
+.feedback-wrong {
+  border-color: var(--bad);
+}
+
+.feedback-title {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.feedback-correct .feedback-title {
+  color: var(--ok);
+}
+
+.feedback-wrong .feedback-title {
+  color: var(--bad);
+}
+
+/* 라운드 결과, 최종 결과 */
+
+.big-score {
+  font-size: 80px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.big-score-unit {
+  margin-left: 4px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+}
+
+.next-round {
+  font-weight: 700;
+}
+
+.stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 2px solid var(--ink);
+}
+
+.stats dt {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.stats dd {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.category-scores {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-scores li {
+  display: grid;
+  grid-template-columns: 5.2em 1fr 3.4em;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-name {
+  font-weight: 700;
+}
+
+.category-bar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--track);
+}
+
+.category-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.category-score {
+  text-align: right;
+  font-weight: 700;
+}
+
+/* 넓은 화면(진행자용 PC 화면 공유)에서는 글자를 키운다 */
+
+@media (min-width: 768px) {
+  .app {
+    padding-top: 48px;
+  }
+
+  .question-text {
+    font-size: 30px;
+  }
+
+  .option {
+    font-size: 20px;
+  }
 }
