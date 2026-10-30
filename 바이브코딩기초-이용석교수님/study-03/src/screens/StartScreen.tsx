@@ -1,9 +1,10 @@
 // 게임 소개와 규칙 요약을 보여주고 게임을 시작하는 시작 화면 (F-01)
 interface StartScreenProps {
   onStart: () => void
+  onOpenLeaderboard: () => void
 }
 
-export default function StartScreen({ onStart }: StartScreenProps) {
+export default function StartScreen({ onStart, onOpenLeaderboard }: StartScreenProps) {
   return (
     <section className="screen start">
       <div className="omr-row" aria-hidden="true">
@@ -22,9 +23,14 @@ export default function StartScreen({ onStart }: StartScreenProps) {
         <li>한 문제를 맞히면 10점이고, 만점은 400점이에요.</li>
         <li>키보드 1~4번으로 보기를 고르고 Enter로 다음 문제로 넘어가요.</li>
       </ul>
-      <button className="btn btn-primary" type="button" onClick={onStart} autoFocus>
-        게임 시작
-      </button>
+      <div className="actions">
+        <button className="btn btn-primary" type="button" onClick={onStart} autoFocus>
+          게임 시작
+        </button>
+        <button className="btn btn-secondary" type="button" onClick={onOpenLeaderboard}>
+          순위표
+        </button>
+      </div>
     </section>
   )
 }

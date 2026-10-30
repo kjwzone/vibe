@@ -1,5 +1,15 @@
-// 총점·정답률·카테고리별 점수·소요시간·등급을 보여주고 새 게임을 시작하는 결과 화면 (F-07, F-09)
-import type { GameState } from '../lib/gameReducer'
+// 총점·정답률·분야별 점수·소요시간·등급을 보여주고 닉네임 등록과 새 게임을 처리하는 결과 화면 (F-07~F-09)
+import { useState, type Dispatch, type FormEvent } from 'react'
+import type { GameAction, GameState } from '../lib/gameReducer'
+import {
+  MAX_ENTRIES,
+  NICKNAME_MAX,
+  NICKNAME_MIN,
+  getRank,
+  isStorageAvailable,
+  loadLeaderboard,
+  submitEntry,
+} from '../lib/leaderboard'
 import { CATEGORIES, CATEGORY_LABELS } from '../lib/questions'
 import {
   calcAccuracy,
@@ -13,13 +23,14 @@ import {
 
 interface ResultScreenProps {
   state: GameState
+  dispatch: Dispatch<GameAction>
   onRestart: () => void
 }
 
 const MAX_SCORE = 400
 const MAX_CATEGORY_SCORE = 100
 
-export default function ResultScreen({ state, onRestart }: ResultScreenProps) {
+export default function ResultScreen({ state, dispatch, onRestart }: ResultScreenProps) {
   const totalQuestions = state.results.length
   const correct = countCorrect(state.results)
   const score = calcTotalScore(state.results)
@@ -28,6 +39,31 @@ export default function ResultScreen({ state, onRestart }: ResultScreenProps) {
     state.startedAt !== null && state.finishedAt !== null
       ? calcDurationSec(state.startedAt, state.finishedAt)
       : 0
+
+  const [storageOk] = useState(isStorageAvailable)
+  const [nickname, setNickname] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [entries, setEntries] = useState(() => loadLeaderboard())
+  const registered = state.registeredAt !== null
+  const myRank = state.registeredAt === null ? null : getRank(entries, state.registeredAt)
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (registered) return
+
+    const submitted = submitEntry({
+      rawNickname: nickname,
+      results: state.results,
+      durationSec,
+    })
+    if (!submitted.ok) {
+      setError(submitted.message)
+      return
+    }
+    setEntries(submitted.entries)
+    setError(null)
+    dispatch({ type: 'REGISTER', playedAt: submitted.entry.playedAt })
+  }
 
   return (
     <section className="screen result">
@@ -75,9 +111,66 @@ export default function ResultScreen({ state, onRestart }: ResultScreenProps) {
         ))}
       </ul>
 
-      <button className="btn btn-primary" type="button" onClick={onRestart}>
-        다시 하기
-      </button>
+      <div className="register">
+        <h2 className="section-title">순위표에 이름 남기기</h2>
+        {!storageOk ? (
+          <p className="notice" role="status">
+            이 브라우저에서는 기록을 저장할 수 없어요. 순위는 남지 않지만 다시 하기는 그대로 할 수 있어요.
+          </p>
+        ) : registered ? (
+          <p className="registered" role="status">
+            {myRank === null
+              ? `등록했지만 저장 가능한 ${MAX_ENTRIES}건 안에 들지 못했어요.`
+              : `등록 완료. 지금 ${myRank}위예요.`}
+          </p>
+        ) : (
+          <form className="register-form" onSubmit={handleSubmit} noValidate>
+            <label className="register-label" htmlFor="nickname">
+              닉네임
+            </label>
+            <div className="register-row">
+              <input
+                id="nickname"
+                className="input"
+                type="text"
+                value={nickname}
+                autoComplete="off"
+                aria-invalid={error !== null}
+                aria-describedby={error !== null ? 'nickname-error' : 'nickname-hint'}
+                onChange={(event) => {
+                  setNickname(event.target.value)
+                  setError(null)
+                }}
+              />
+              <button className="btn btn-primary" type="submit">
+                등록
+              </button>
+            </div>
+            {error === null ? (
+              <p className="key-hint" id="nickname-hint">
+                {NICKNAME_MIN}~{NICKNAME_MAX}자로 입력해 주세요. 공백만으로는 만들 수 없어요.
+              </p>
+            ) : (
+              <p className="field-error" id="nickname-error" role="alert">
+                {error}
+              </p>
+            )}
+          </form>
+        )}
+      </div>
+
+      <div className="actions">
+        <button className="btn btn-primary" type="button" onClick={onRestart}>
+          다시 하기
+        </button>
+        <button
+          className="btn btn-secondary"
+          type="button"
+          onClick={() => dispatch({ type: 'OPEN_LEADERBOARD' })}
+        >
+          순위표 보기
+        </button>
+      </div>
     </section>
   )
 }

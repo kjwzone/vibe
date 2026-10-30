@@ -2,6 +2,7 @@
 import { useReducer } from 'react'
 import { gameReducer, initialState } from './lib/gameReducer'
 import { createGameRounds } from './lib/questions'
+import LeaderboardScreen from './screens/LeaderboardScreen'
 import QuestionScreen from './screens/QuestionScreen'
 import ResultScreen from './screens/ResultScreen'
 import RoundEndScreen from './screens/RoundEndScreen'
@@ -16,12 +17,27 @@ function App() {
 
   return (
     <main className="app">
-      {state.phase === 'start' && <StartScreen onStart={startGame} />}
+      {state.phase === 'start' && (
+        <StartScreen
+          onStart={startGame}
+          onOpenLeaderboard={() => dispatch({ type: 'OPEN_LEADERBOARD' })}
+        />
+      )}
       {(state.phase === 'playing' || state.phase === 'feedback') && (
         <QuestionScreen state={state} dispatch={dispatch} />
       )}
       {state.phase === 'roundEnd' && <RoundEndScreen state={state} dispatch={dispatch} />}
-      {state.phase === 'result' && <ResultScreen state={state} onRestart={startGame} />}
+      {state.phase === 'result' && (
+        <ResultScreen state={state} dispatch={dispatch} onRestart={startGame} />
+      )}
+      {state.phase === 'leaderboard' && (
+        <LeaderboardScreen
+          registeredAt={state.registeredAt}
+          returnTo={state.returnTo}
+          dispatch={dispatch}
+          onRestart={startGame}
+        />
+      )}
     </main>
   )
 }
