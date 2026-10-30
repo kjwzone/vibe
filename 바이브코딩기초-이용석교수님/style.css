@@ -170,6 +170,15 @@ select:focus-visible {
   cursor: pointer;
 }
 
+.add-hint {
+  grid-column: 1 / -1;
+  min-height: 20px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+
 /* 카테고리 탭 */
 .tabs {
   display: flex;

@@ -7,13 +7,22 @@ const CATEGORY_CLASS = { 업무: 'work', 개인: 'life', 공부: 'study' };
 
 const FILTER_ALL = '전체';
 
+// 제목에 이 단어가 들어 있으면 해당 카테고리로 자동 분류한다
+const CATEGORY_KEYWORDS = {
+  업무: ['회의', '미팅', '보고서', '메일', '기획', '발표', '결재', '출장', '업무', '거래처', '계약', '프로젝트', '고객', '견적'],
+  개인: ['장보기', '마트', '운동', '헬스', '병원', '청소', '빨래', '요리', '약속', '생일', '여행', '산책', '쇼핑', '은행', '택배'],
+  공부: ['공부', '강의', '수업', '과제', '시험', '복습', '예습', '독서', '영어', '단어', '자격증', '논문', '코딩', '레포트'],
+};
+
 let todos = [];
 let editingId = null;
 let activeFilter = FILTER_ALL;
+let categoryPicked = false;
 
 const form = document.querySelector('.add');
 const titleInput = document.getElementById('new-title');
 const categorySelect = document.getElementById('new-category');
+const autoHint = document.getElementById('auto-hint');
 const listEl = document.querySelector('.todo-list');
 const tabsEl = document.querySelector('.tabs');
 const progressDone = document.getElementById('progress-done');
@@ -100,6 +109,34 @@ function updateTodo(id, title, category) {
 function deleteTodo(id) {
   todos = todos.filter((todo) => todo.id !== id);
   commit();
+}
+
+// 키워드 자동 분류
+
+// 일치하는 키워드가 가장 많은 카테고리를 돌려준다. 일치가 없거나 동점이면 null
+function classifyTitle(title) {
+  let best = null;
+  let bestHits = 0;
+  let tie = false;
+  CATEGORIES.forEach((category) => {
+    const hits = CATEGORY_KEYWORDS[category].filter((word) => title.includes(word)).length;
+    if (hits > bestHits) {
+      best = category;
+      bestHits = hits;
+      tie = false;
+    } else if (hits > 0 && hits === bestHits) {
+      tie = true;
+    }
+  });
+  return tie ? null : best;
+}
+
+// 사용자가 카테고리를 직접 고른 뒤에는 바꾸지 않는다
+function applyAutoCategory() {
+  if (categoryPicked) return;
+  const category = classifyTitle(titleInput.value);
+  categorySelect.value = category || CATEGORIES[0];
+  autoHint.textContent = category ? '자동 분류: ' + category : '';
 }
 
 // 화면 그리기 (데이터를 바꾸지 않는다)
@@ -252,8 +289,17 @@ form.addEventListener('submit', (event) => {
   event.preventDefault();
   if (addTodo(titleInput.value, categorySelect.value)) {
     titleInput.value = '';
+    categoryPicked = false;
+    applyAutoCategory();
   }
   titleInput.focus();
+});
+
+titleInput.addEventListener('input', applyAutoCategory);
+
+categorySelect.addEventListener('change', () => {
+  categoryPicked = true;
+  autoHint.textContent = '';
 });
 
 tabsEl.addEventListener('click', (event) => {
