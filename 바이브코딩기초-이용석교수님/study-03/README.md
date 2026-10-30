@@ -1,32 +1,69 @@
-# React + TypeScript + Vite
+# 상식 퀴즈 게임
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+한국사·과학·지리·일반상식 4개 분야 40문제를 4지선다로 풀고, 문제마다 해설을 확인하고, 점수를 순위표에 남기는 웹 게임입니다. 서버와 DB 없이 브라우저에서만 동작합니다. 규칙과 기능 정의는 `상식 퀴즈 게임 PRD.md`를 기준으로 합니다.
 
-Currently, two official plugins are available:
+## 실행 방법
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Node.js 22.12 이상이 필요합니다(Vite는 20.19 이상, 테스트 도구 Vitest는 22.12 이상을 요구합니다). 개발할 때는 24 버전을 썼습니다.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+터미널에 표시되는 주소(기본 `http://localhost:5173/`)를 브라우저로 엽니다.
+
+| 명령어 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 실행 |
+| `npm test` | 테스트 전체 실행 |
+| `npm run build` | 타입 검사 후 `dist/`에 배포용 파일 생성 |
+| `npm run preview` | 빌드 결과를 로컬에서 확인 |
+| `npm run lint` | 코드 검사 |
+
+테스트 하나만 실행하려면 `npx vitest run src/lib/questions.test.ts`처럼 파일을 지정하거나 `npx vitest run -t "테스트 이름"`을 사용합니다.
+
+## 게임 방법
+
+- 4개 라운드(한국사 → 과학 → 지리 → 일반상식)를 차례로 풀고, 라운드마다 10문제가 나옵니다.
+- 보기를 고르면 바로 확정되고 정답과 해설이 표시됩니다. 정답은 문제당 10점, 만점은 400점입니다.
+- 키보드 1~4번으로 보기를 고르고 Enter로 다음으로 넘어갑니다.
+- 게임이 끝나면 닉네임(2~10자)을 입력해 순위표에 기록을 남길 수 있습니다.
+- 순위는 총점이 높은 순, 같으면 소요시간이 짧은 순, 그래도 같으면 먼저 기록한 순입니다. 순위표에는 상위 10건을 보여주고, 최대 50건을 저장합니다.
+- 순위는 이 브라우저의 `localStorage`(키 `quiz_leaderboard`)에만 저장됩니다. 다른 기기와 공유되지 않고, 브라우저 데이터를 지우면 사라집니다. 저장소를 쓸 수 없는 환경(일부 사생활 보호 모드 등)에서도 게임은 정상 진행되고 순위만 저장되지 않습니다.
+
+## 문제 추가·수정 방법
+
+1. `src/data/questions.json`을 수정합니다. 문제 하나의 모양은 다음과 같습니다.
+
+   ```json
+   {
+     "id": "HIS-001",
+     "category": "history",
+     "question": "훈민정음을 창제한 조선의 왕은?",
+     "options": ["태조", "태종", "세종", "정조"],
+     "answerIndex": 2,
+     "explanation": "세종이 1443년 창제하고 1446년 반포했다.",
+     "difficulty": "easy"
+   }
+   ```
+
+   - `category`는 `history`, `science`, `geography`, `general` 중 하나입니다.
+   - `answerIndex`는 `options`에서 정답의 위치(0~3)입니다. 게임에서 보기 순서를 섞어도 정답 판정은 자동으로 맞춰집니다.
+   - `difficulty`는 `easy`, `normal`, `hard` 중 하나이고, `id`는 겹치면 안 됩니다.
+   - 문제는 80자 이내, 보기는 20자 이내로 씁니다.
+2. `npm test`를 실행해 검증 테스트가 통과하는지 확인합니다.
+
+현재 검증 테스트(`src/lib/questions.test.ts`)는 총 40문제, 카테고리별 10문제, 카테고리별 난이도 쉬움 4·보통 4·어려움 2, id 중복 없음, 보기 4개(중복 없음), `answerIndex` 0~3, 해설 존재, 글자 수 제한을 확인합니다. 문제를 늘리거나 구성을 바꾸려면 이 테스트의 기대값도 함께 수정해야 합니다.
+
+문제를 새로 쓸 때는 PRD 8장의 검수 체크리스트를 따릅니다. 정답이 하나뿐인지 확인하고, '모두 정답' 같은 보기는 쓰지 않으며, 인구나 현직 인물처럼 시점에 따라 바뀌는 사실은 피합니다.
+
+## 폴더 구조
+
+| 경로 | 내용 |
+| --- | --- |
+| `src/data/questions.json` | 문제 은행 |
+| `src/lib/` | 출제·섞기(`questions.ts`), 점수 계산(`scoring.ts`), 게임 상태(`gameReducer.ts`), 순위(`leaderboard.ts`)와 각 테스트 |
+| `src/screens/` | 시작, 문제, 라운드 결과, 결과, 순위표 화면 |
+| `src/components/` | 진행 표시 |
+| `src/index.css` | 전체 스타일 |
