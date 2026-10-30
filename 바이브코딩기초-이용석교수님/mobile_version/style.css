@@ -1,0 +1,362 @@
+/* 할 일 관리 앱 모바일 버전 스타일 (엄지 조작 기준, 터치 영역 44px 이상) */
+
+:root {
+  --bg: #f4f5f8;
+  --ink: #1b2230;
+  --ink-soft: #5d6677;
+  --line: #d9dde5;
+  --field: #ffffff;
+  --surface: #ffffff;
+
+  --work: #2f5fd0;
+  --work-tint: #e3eafa;
+  --work-text: #1f3f94;
+  --life: #cf3f78;
+  --life-tint: #fbe4ee;
+  --life-text: #9a2556;
+  --study: #178a67;
+  --study-tint: #ddf2ea;
+  --study-text: #0f6249;
+
+  --tap: 44px;
+  --column: 520px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--work);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 상단 고정 영역 */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.top > * {
+  max-width: var(--column);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.top-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.progress-total {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-total strong {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.progress-total span {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.meter {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+  margin-top: 10px;
+}
+
+.seg {
+  flex: var(--total) 1 0;
+  min-width: 6px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.seg i {
+  display: block;
+  width: var(--done);
+  height: 100%;
+}
+
+.seg-work { background: var(--work-tint); }
+.seg-work i { background: var(--work); }
+.seg-life { background: var(--life-tint); }
+.seg-life i { background: var(--life); }
+.seg-study { background: var(--study-tint); }
+.seg-study i { background: var(--study); }
+
+/* 카테고리 탭: 가로 스크롤 알약, 카테고리별 진행 수를 함께 보여 준다 */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink-soft);
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabs button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.tabs .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-work .dot { background: var(--work); }
+.legend-life .dot { background: var(--life); }
+.legend-study .dot { background: var(--study); }
+
+.tabs .count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+/* 목록 */
+.app {
+  max-width: var(--column);
+  margin: 0 auto;
+  /* 하단 고정 입력창에 가리지 않도록 여백을 둔다 */
+  padding: 4px 16px calc(140px + env(safe-area-inset-bottom));
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo {
+  display: grid;
+  grid-template-columns: var(--tap) 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.todo-check {
+  grid-row: 1 / 3;
+  justify-self: start;
+  width: 26px;
+  height: 26px;
+  margin: 0 0 0 4px;
+  accent-color: var(--ink);
+}
+
+.todo-title {
+  grid-column: 2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.is-done .todo-title {
+  color: var(--ink-soft);
+  text-decoration: line-through;
+}
+
+.badge {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-work { background: var(--work-tint); color: var(--work-text); }
+.badge-life { background: var(--life-tint); color: var(--life-text); }
+.badge-study { background: var(--study-tint); color: var(--study-text); }
+
+.todo-actions {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: flex;
+}
+
+.todo-actions button {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.todo-actions button:active {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.todo-actions button:disabled,
+.todo-check:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.empty {
+  padding: 48px 0;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* 수정 중인 행 */
+.todo.is-editing {
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.todo-edit-title,
+.todo-edit-category {
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+}
+
+.is-editing .todo-actions {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  justify-content: flex-end;
+}
+
+.is-editing .todo-actions button[data-action="save"] {
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0 20px;
+}
+
+/* 하단 고정 입력창 */
+.add {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  padding: 6px max(16px, calc((100% - var(--column)) / 2 + 16px)) calc(12px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.add-hint {
+  grid-column: 1 / -1;
+  min-height: 20px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+
+.add-title,
+.add-category {
+  min-width: 0;
+  min-height: var(--tap);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+}
+
+.add-title {
+  padding: 0 12px;
+}
+
+.add-category {
+  padding: 0 6px;
+}
+
+.add-button {
+  min-width: 60px;
+  min-height: var(--tap);
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}

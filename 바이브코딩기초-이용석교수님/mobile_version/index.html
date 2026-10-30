@@ -1,0 +1,54 @@
+<!-- 할 일 관리 앱의 모바일 화면 구조 (상단 고정 진행률·탭, 하단 고정 입력창) -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>할 일 관리</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 상단 고정 영역 진행률 (F6, F7)과 카테고리 탭 (F5) -->
+  <header class="top">
+    <div class="top-row">
+      <h1 class="app-title">오늘 할 일</h1>
+      <section class="progress" aria-label="진행률">
+        <p class="progress-total"><strong id="progress-done">0</strong><span id="progress-detail">/0 완료 · 0%</span></p>
+      </section>
+    </div>
+    <div class="meter" role="img" aria-label="업무 0/0, 개인 0/0, 공부 0/0 완료">
+      <span class="seg seg-work" style="--total: 1; --done: 0%"><i></i></span>
+      <span class="seg seg-life" style="--total: 1; --done: 0%"><i></i></span>
+      <span class="seg seg-study" style="--total: 1; --done: 0%"><i></i></span>
+    </div>
+    <nav class="tabs" aria-label="카테고리 필터">
+      <button type="button" data-filter="전체" aria-pressed="true">전체</button>
+      <button type="button" class="legend-work" data-filter="업무" aria-pressed="false"><span class="dot"></span>업무 <span class="count">0/0</span></button>
+      <button type="button" class="legend-life" data-filter="개인" aria-pressed="false"><span class="dot"></span>개인 <span class="count">0/0</span></button>
+      <button type="button" class="legend-study" data-filter="공부" aria-pressed="false"><span class="dot"></span>공부 <span class="count">0/0</span></button>
+    </nav>
+  </header>
+
+  <!-- 할 일 목록 -->
+  <main class="app">
+    <ul class="todo-list"></ul>
+  </main>
+
+  <!-- 하단 고정 입력 영역 (F1) -->
+  <form class="add" autocomplete="off">
+    <p id="auto-hint" class="add-hint" aria-live="polite"></p>
+    <label class="visually-hidden" for="new-title">새 할 일</label>
+    <input id="new-title" class="add-title" type="text" placeholder="새 할 일을 입력하세요" enterkeyhint="done">
+    <label class="visually-hidden" for="new-category">카테고리</label>
+    <select id="new-category" class="add-category">
+      <option>업무</option>
+      <option>개인</option>
+      <option>공부</option>
+    </select>
+    <button class="add-button" type="submit">추가</button>
+  </form>
+
+  <script src="app.js"></script>
+</body>
+</html>
