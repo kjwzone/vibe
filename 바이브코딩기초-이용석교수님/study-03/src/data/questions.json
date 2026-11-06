@@ -190,6 +190,16 @@
     "difficulty": "hard"
   },
   {
+    "id": "SCI-011",
+    "category": "science",
+    "question": "사람의 혈액에서 산소를 운반하는 세포는?",
+    "options": ["백혈구", "혈소판", "혈장", "적혈구"],
+    "answerIndex": 3,
+    "explanation": "적혈구 속 헤모글로빈이 산소와 결합해 온몸으로 운반한다. 백혈구는 면역, 혈소판은 혈액 응고를 맡고, 혈장은 세포가 아닌 액체 성분이다.",
+    "difficulty": "normal",
+    "source": "중학교 과학 교과서(순환), 한국민족문화대백과사전·두산백과 '적혈구' 항목"
+  },
+  {
     "id": "GEO-001",
     "category": "geography",
     "question": "면적 기준으로 세계에서 가장 넓은 나라는?",
@@ -280,6 +290,16 @@
     "difficulty": "hard"
   },
   {
+    "id": "GEO-011",
+    "category": "geography",
+    "question": "적도와 본초 자오선이 모두 지나가는 대륙은?",
+    "options": ["유럽", "남아메리카", "아시아", "아프리카"],
+    "answerIndex": 3,
+    "explanation": "적도와 본초 자오선(경도 0도)은 아프리카 기니만 앞바다에서 만나고, 두 선 모두 아프리카 대륙을 지난다. 유럽은 적도가, 남아메리카와 아시아는 본초 자오선이 지나지 않는다.",
+    "difficulty": "hard",
+    "source": "중학교 사회 교과서(위도와 경도), 두산백과 '본초 자오선' 항목"
+  },
+  {
     "id": "GEN-001",
     "category": "general",
     "question": "올림픽 오륜기의 고리는 모두 몇 개일까?",
@@ -368,5 +388,15 @@
     "answerIndex": 3,
     "explanation": "유엔 공식 언어는 영어, 프랑스어, 중국어, 러시아어, 스페인어, 아랍어 6개이며 독일어는 포함되지 않는다.",
     "difficulty": "hard"
+  },
+  {
+    "id": "GEN-011",
+    "category": "general",
+    "question": "태극기 가운데 태극 문양에서 위쪽 절반의 색은?",
+    "options": ["빨간색", "파란색", "검은색", "노란색"],
+    "answerIndex": 0,
+    "explanation": "태극 문양은 위쪽이 빨간색(양), 아래쪽이 파란색(음)이다. 검은색은 네 모서리의 괘에 쓰인다.",
+    "difficulty": "easy",
+    "source": "행정안전부 '국기(태극기)' 안내, 대한민국국기법 시행령"
   }
 ]
