@@ -29,8 +29,8 @@ npm run lint                         # oxlint
 
 ## 코드 구조
 
-- `src/data/questions.json` 문제 은행 40문제. 스키마는 PRD 8장.
-- `src/lib/questions.ts` 카테고리 조회와 섞기. `createGameRounds()`가 한 판 분량(라운드 4개 × 10문제)을 만든다. 난수 함수를 인자로 받아 테스트에서 시드를 고정할 수 있다.
+- `src/data/questions.json` 문제 은행. 카테고리별 10문제 이상이며 `/quiz-add`로 추가한다. 스키마는 PRD 8장.
+- `src/lib/questions.ts` 카테고리 조회와 섞기. `createGameRounds()`가 한 판 분량(라운드 4개 × 10문제)을 만든다. 카테고리 문제가 10개보다 많으면 `getRoundQuestions()`가 무작위로 10문제(`QUESTIONS_PER_ROUND`)를 뽑는다. 난수 함수를 인자로 받아 테스트에서 시드를 고정할 수 있다.
 - `src/lib/scoring.ts` 총점, 카테고리별 점수, 정답률, 등급, 소요시간 계산과 표시 형식. 모두 순수 함수다.
 - `src/lib/gameReducer.ts` 게임 상태 전체를 `useReducer` 하나로 관리한다. 액션은 `START`, `ANSWER`, `NEXT`, `OPEN_LEADERBOARD`, `CLOSE_LEADERBOARD`, `REGISTER`이고 현재 시각은 액션에 담아 받는다. 연타 방지는 `ANSWER`가 `playing` 단계일 때만 반영되는 것으로 보장하고, 순위 등록은 한 판에 한 번만(`registeredAt`) 반영한다. 순위표는 `leaderboard` 단계이며 `returnTo`에 돌아갈 화면을 기억한다.
 - `src/lib/leaderboard.ts` 닉네임 검사, 정렬, 50건 제한, 순위 계산, `quiz_leaderboard` 입출력. 저장소 접근은 모두 예외를 삼키고 빈 목록·실패값으로 돌려준다. 화면 코드는 저장소를 직접 만지지 않고 `submitEntry`, `loadLeaderboard`를 쓴다.
