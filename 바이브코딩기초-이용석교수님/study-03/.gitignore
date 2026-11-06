@@ -25,3 +25,6 @@ dist-ssr
 
 # 플레이어 닉네임이 들어 있는 리더보드 집계 결과 (/quiz-leaderboard)
 leaderboard/
+
+# /quiz-daily 백업과 후보 파일
+backups/
