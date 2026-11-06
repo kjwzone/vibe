@@ -28,3 +28,6 @@ leaderboard/
 
 # /quiz-daily 백업과 후보 파일
 backups/
+
+# 선생님 모드: 학생 결과 파일과 성적 보고서 (학생 이름 포함)
+class-results/

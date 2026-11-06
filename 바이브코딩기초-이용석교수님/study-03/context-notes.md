@@ -44,6 +44,9 @@
 | D36 | 선생님 모드는 시작 화면 버튼, 잠금 없음. 불러온 데이터는 화면 상태에만 두고 저장하지 않음 | 사용자 선택(잠금 없음). 정적 웹이라 PIN은 보안이 아님. 저장하지 않으면 학생 정보가 공용 PC에 남지 않음. |
 | D37 | CSV는 UTF-8 BOM을 붙여 엑셀에서 한글이 깨지지 않게 함 | 사용자 선택(CSV 내보내기). |
 | D38 | 스킬은 운영용(collect·report·questions·verify)과 통합(teacher-mode)으로 나눔. 파일을 쓰는 report·verify·teacher-mode는 `disable-model-invocation: true`. 통합 스킬은 호출 불가 스킬의 SKILL.md를 읽고 절차를 따름 | 사용자 요청. Claude가 disable 스킬을 Skill 도구로 부를 수 없기 때문. |
+| D39 | 통합 스킬 이름을 `teacher-dashboard`, 보고서를 `class-results/report/teacher_report.html`로 정함. `export-report`가 보고서의 `data-export` 표를 CSV로 옮기고 PDF는 설치된 Chrome/Edge의 `--print-to-pdf`로 만듦 | 작업 중 사용자 요청(그때 두 파일은 없었음). 다시 집계하지 않고 보고서 표를 옮겨 숫자가 보고서와 항상 같게 함. PDF는 새 패키지 없이 가능하지만 브라우저와 한글 글꼴이 조건. |
+| D40 | 브라우저 확인은 `teacher-verify/smoke.mjs`(Node 내장 WebSocket + Chrome DevTools Protocol, 임시 프로필)로 자동화 | Playwright 등 새 의존성 없이 반복 가능한 검증. 사용자 브라우저 기록을 건드리지 않음. |
+| D41 | 스킬 스크립트 `class.mjs`는 `teacher.ts`의 검사·정렬·집계 규칙을 복제함 | Node가 Vite식 JSON·확장자 없는 import를 그대로 못 읽어서 공유하지 못함. 규칙을 바꾸면 두 곳을 함께 고쳐야 함. |
 
 ## 열린 질문
 
