@@ -13,6 +13,8 @@ npm run dev
 
 터미널에 표시되는 주소(기본 `http://localhost:5173/`)를 브라우저로 엽니다.
 
+서버 없이 열고 싶으면 `npm run build` 후 `dist/index.html`을 더블클릭합니다. 빌드할 때 JS와 CSS를 HTML 한 파일에 넣기 때문에 `file://`로 열어도 동작합니다. 루트의 `index.html`은 개발용 원본이라 더블클릭해도 빈 화면만 나옵니다.
+
 | 명령어 | 설명 |
 | --- | --- |
 | `npm run dev` | 개발 서버 실행 |
