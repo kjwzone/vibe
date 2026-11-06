@@ -1,5 +1,6 @@
 // 총점·정답률·분야별 점수·소요시간·등급을 보여주고 닉네임 등록과 새 게임을 처리하는 결과 화면 (F-07~F-09)
 import { useState, type Dispatch, type FormEvent } from 'react'
+import { downloadText } from '../lib/download'
 import type { GameAction, GameState } from '../lib/gameReducer'
 import {
   MAX_ENTRIES,
@@ -20,6 +21,7 @@ import {
   formatDuration,
   getGrade,
 } from '../lib/scoring'
+import { prepareResultExport } from '../lib/teacher'
 
 interface ResultScreenProps {
   state: GameState
@@ -45,6 +47,26 @@ export default function ResultScreen({ state, dispatch, onRestart }: ResultScree
   const [error, setError] = useState<string | null>(null)
   const [entries, setEntries] = useState(() => loadLeaderboard())
   const registered = state.registeredAt !== null
+
+  // 선생님께 낼 결과 파일 (순위 등록과는 별개)
+  const [studentName, setStudentName] = useState('')
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [exportedFile, setExportedFile] = useState<string | null>(null)
+
+  function handleExport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const prepared = prepareResultExport({ rawName: studentName, results: state.results, durationSec })
+    if (!prepared.ok) {
+      setExportError(prepared.message)
+      return
+    }
+    if (!downloadText(prepared.fileName, prepared.text, 'application/json')) {
+      setExportError('결과 파일을 저장하지 못했어요.')
+      return
+    }
+    setExportError(null)
+    setExportedFile(prepared.fileName)
+  }
   const myRank = state.registeredAt === null ? null : getRank(entries, state.registeredAt)
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -157,6 +179,46 @@ export default function ResultScreen({ state, dispatch, onRestart }: ResultScree
             )}
           </form>
         )}
+      </div>
+
+      <div className="register">
+        <h2 className="section-title">선생님께 결과 제출</h2>
+        <form className="register-form" onSubmit={handleExport} noValidate>
+          <label className="register-label" htmlFor="student-name">
+            이름
+          </label>
+          <div className="register-row">
+            <input
+              id="student-name"
+              className="input"
+              type="text"
+              value={studentName}
+              autoComplete="off"
+              aria-invalid={exportError !== null}
+              aria-describedby={exportError !== null ? 'student-name-error' : 'student-name-hint'}
+              onChange={(event) => {
+                setStudentName(event.target.value)
+                setExportError(null)
+              }}
+            />
+            <button className="btn btn-secondary" type="submit">
+              결과 파일 저장
+            </button>
+          </div>
+          {exportError !== null ? (
+            <p className="field-error" id="student-name-error" role="alert">
+              {exportError}
+            </p>
+          ) : exportedFile !== null ? (
+            <p className="registered" id="student-name-hint" role="status">
+              {exportedFile} 파일을 저장했어요. 이 파일을 선생님께 보내 주세요.
+            </p>
+          ) : (
+            <p className="key-hint" id="student-name-hint">
+              문항별 정답 여부가 담긴 결과 파일(.json)을 저장해요. 이름은 {NICKNAME_MIN}~{NICKNAME_MAX}자예요.
+            </p>
+          )}
+        </form>
       </div>
 
       <div className="actions">

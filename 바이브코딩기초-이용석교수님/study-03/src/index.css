@@ -588,3 +588,81 @@ ul {
     font-size: 20px;
   }
 }
+
+/* 선생님 모드: 파일 불러오기, 오류 목록, 표 (표는 안에서만 가로로 스크롤) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.file-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.file-button:focus-within {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.teacher-load {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.teacher-errors {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bad-bg);
+  color: var(--bad);
+  font-size: 0.9rem;
+}
+
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--track);
+  text-align: left;
+}
+
+.data-table thead th {
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.data-table tbody th {
+  font-weight: 600;
+}
+
+.data-table .cell-question {
+  min-width: 14em;
+  white-space: normal;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

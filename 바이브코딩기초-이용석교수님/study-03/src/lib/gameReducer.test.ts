@@ -245,3 +245,17 @@ describe('순위표 열기·닫기·등록', () => {
     expect(restarted.registeredAt).toBeNull()
   })
 })
+
+describe('선생님 모드 열기·닫기', () => {
+  it('시작 화면에서 열고 닫으면 시작 화면으로 돌아간다', () => {
+    const open = gameReducer(initialState, { type: 'OPEN_TEACHER' })
+    expect(open.phase).toBe('teacher')
+    expect(gameReducer(open, { type: 'CLOSE_TEACHER' }).phase).toBe('start')
+  })
+
+  it('게임 중이나 결과 화면에서는 열리지 않는다', () => {
+    const playing = started()
+    expect(gameReducer(playing, { type: 'OPEN_TEACHER' })).toBe(playing)
+    expect(gameReducer(initialState, { type: 'CLOSE_TEACHER' })).toBe(initialState)
+  })
+})

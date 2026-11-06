@@ -7,6 +7,7 @@ import QuestionScreen from './screens/QuestionScreen'
 import ResultScreen from './screens/ResultScreen'
 import RoundEndScreen from './screens/RoundEndScreen'
 import StartScreen from './screens/StartScreen'
+import TeacherScreen from './screens/TeacherScreen'
 
 function App() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
@@ -21,6 +22,7 @@ function App() {
         <StartScreen
           onStart={startGame}
           onOpenLeaderboard={() => dispatch({ type: 'OPEN_LEADERBOARD' })}
+          onOpenTeacher={() => dispatch({ type: 'OPEN_TEACHER' })}
         />
       )}
       {(state.phase === 'playing' || state.phase === 'feedback') && (
@@ -38,6 +40,7 @@ function App() {
           onRestart={startGame}
         />
       )}
+      {state.phase === 'teacher' && <TeacherScreen dispatch={dispatch} />}
     </main>
   )
 }

@@ -2,9 +2,10 @@
 interface StartScreenProps {
   onStart: () => void
   onOpenLeaderboard: () => void
+  onOpenTeacher: () => void
 }
 
-export default function StartScreen({ onStart, onOpenLeaderboard }: StartScreenProps) {
+export default function StartScreen({ onStart, onOpenLeaderboard, onOpenTeacher }: StartScreenProps) {
   return (
     <section className="screen start">
       <div className="omr-row" aria-hidden="true">
@@ -29,6 +30,9 @@ export default function StartScreen({ onStart, onOpenLeaderboard }: StartScreenP
         </button>
         <button className="btn btn-secondary" type="button" onClick={onOpenLeaderboard}>
           순위표
+        </button>
+        <button className="btn btn-secondary" type="button" onClick={onOpenTeacher}>
+          선생님 모드
         </button>
       </div>
     </section>

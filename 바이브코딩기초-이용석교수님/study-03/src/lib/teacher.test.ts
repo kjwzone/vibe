@@ -6,6 +6,7 @@ import {
   buildStudentResult,
   mergeResults,
   parseResultText,
+  prepareResultExport,
   questionStats,
   rankResults,
   resultFileName,
@@ -61,6 +62,28 @@ describe('buildStudentResult', () => {
       { questionId: 'GEO-001', category: 'geography', correct: true },
       { questionId: 'GEN-001', category: 'general', correct: false },
     ])
+  })
+})
+
+describe('prepareResultExport', () => {
+  it('이름이 올바르면 다시 읽을 수 있는 결과 파일 내용을 만든다', () => {
+    const prepared = prepareResultExport({
+      rawName: '  김민수 ',
+      results: sampleAnswers,
+      durationSec: 120,
+      now: new Date('2026-11-06T01:00:00.000Z'),
+    })
+    expect(prepared.ok).toBe(true)
+    if (!prepared.ok) return
+    expect(prepared.result.name).toBe('김민수')
+    expect(prepared.fileName).toMatch(/^quiz-result-김민수-/)
+    expect(parseResultText(prepared.text, prepared.fileName)).toEqual({ results: [prepared.result], errors: [] })
+  })
+
+  it('이름이 비었거나 너무 길면 이름 안내 문구를 돌려준다', () => {
+    const empty = prepareResultExport({ rawName: '  ', results: sampleAnswers, durationSec: 1 })
+    expect(empty).toEqual({ ok: false, message: expect.stringContaining('이름') })
+    expect(prepareResultExport({ rawName: '가나다라마바사아자차카', results: sampleAnswers, durationSec: 1 }).ok).toBe(false)
   })
 })
 

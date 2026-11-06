@@ -54,6 +54,28 @@ export function buildStudentResult(input: {
   }
 }
 
+export type ExportResult =
+  | { ok: true; result: StudentResult; fileName: string; text: string }
+  | { ok: false; message: string }
+
+// 이름 검사 → 결과 생성 → 파일 이름·내용까지 한 번에 만든다 (화면에서 Date를 직접 만들지 않도록)
+export function prepareResultExport(input: {
+  rawName: string
+  results: readonly AnswerResult[]
+  durationSec: number
+  now?: Date
+}): ExportResult {
+  const check = validateNickname(input.rawName)
+  if (!check.ok) return { ok: false, message: check.message.replace('닉네임', '이름') }
+  const result = buildStudentResult({
+    name: check.nickname,
+    results: input.results,
+    durationSec: input.durationSec,
+    now: input.now ?? new Date(),
+  })
+  return { ok: true, result, fileName: resultFileName(result), text: JSON.stringify(result, null, 2) }
+}
+
 // 예: quiz-result-김민수-20261106-1930.json (기기 현지 시각)
 export function resultFileName(result: StudentResult): string {
   const d = new Date(result.playedAt)

@@ -2,7 +2,14 @@
 import type { Question } from './questions'
 import type { AnswerResult } from './scoring'
 
-export type Phase = 'start' | 'playing' | 'feedback' | 'roundEnd' | 'result' | 'leaderboard'
+export type Phase =
+  | 'start'
+  | 'playing'
+  | 'feedback'
+  | 'roundEnd'
+  | 'result'
+  | 'leaderboard'
+  | 'teacher'
 
 // 순위표를 닫으면 돌아갈 화면
 export type ReturnPhase = 'start' | 'result'
@@ -28,6 +35,8 @@ export type GameAction =
   | { type: 'OPEN_LEADERBOARD' }
   | { type: 'CLOSE_LEADERBOARD' }
   | { type: 'REGISTER'; playedAt: string }
+  | { type: 'OPEN_TEACHER' }
+  | { type: 'CLOSE_TEACHER' }
 
 export const initialState: GameState = {
   phase: 'start',
@@ -143,5 +152,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'REGISTER':
       if (state.phase !== 'result' || state.registeredAt !== null) return state
       return { ...state, registeredAt: action.playedAt }
+
+    // 선생님 모드는 시작 화면에서만 열고, 닫으면 시작 화면으로 돌아간다
+    case 'OPEN_TEACHER':
+      if (state.phase !== 'start') return state
+      return { ...state, phase: 'teacher' }
+
+    case 'CLOSE_TEACHER':
+      if (state.phase !== 'teacher') return state
+      return { ...state, phase: 'start' }
   }
 }
