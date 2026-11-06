@@ -31,6 +31,9 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 
 export const questionBank = rawQuestions as Question[]
 
+// 한 라운드에 내는 문제 수. 카테고리 문제가 더 많으면 이만큼 무작위로 뽑는다
+export const QUESTIONS_PER_ROUND = 10
+
 type Random = () => number
 
 // Fisher-Yates 셔플, 원본은 바꾸지 않는다
@@ -62,13 +65,13 @@ export function createGameRounds(random: Random = Math.random): Question[][] {
   return CATEGORIES.map((category) => getRoundQuestions(category, random))
 }
 
-// 한 라운드(카테고리)의 문제를 문제 순서와 보기 순서를 섞어 반환한다
+// 한 라운드(카테고리)의 문제를 섞어 10문제를 뽑고 보기 순서도 섞어 반환한다
 export function getRoundQuestions(
   category: Category,
   random: Random = Math.random,
   bank: readonly Question[] = questionBank,
 ): Question[] {
-  return shuffle(getQuestionsByCategory(category, bank), random).map((q) =>
-    shuffleOptions(q, random),
-  )
+  return shuffle(getQuestionsByCategory(category, bank), random)
+    .slice(0, QUESTIONS_PER_ROUND)
+    .map((q) => shuffleOptions(q, random))
 }

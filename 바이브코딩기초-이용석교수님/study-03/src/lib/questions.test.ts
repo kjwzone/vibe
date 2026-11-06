@@ -5,6 +5,7 @@ import {
   createGameRounds,
   getQuestionsByCategory,
   getRoundQuestions,
+  QUESTIONS_PER_ROUND,
   questionBank,
   shuffle,
   shuffleOptions,
@@ -22,21 +23,19 @@ function seededRandom(seed: number) {
 }
 
 describe('문제 은행 데이터', () => {
-  it('총 40문제다', () => {
-    expect(questionBank).toHaveLength(40)
-  })
-
-  it('카테고리별 10문제다', () => {
+  it('카테고리별 한 라운드 분량(10문제) 이상이다', () => {
     for (const category of CATEGORIES) {
-      expect(getQuestionsByCategory(category)).toHaveLength(10)
+      expect(getQuestionsByCategory(category).length).toBeGreaterThanOrEqual(QUESTIONS_PER_ROUND)
     }
   })
 
-  it('카테고리별 난이도는 쉬움 4, 보통 4, 어려움 2다', () => {
+  it('카테고리별 난이도는 쉬움 4, 보통 4, 어려움 2 이상이다', () => {
     for (const category of CATEGORIES) {
       const counts = { easy: 0, normal: 0, hard: 0 }
       for (const q of getQuestionsByCategory(category)) counts[q.difficulty]++
-      expect(counts).toEqual({ easy: 4, normal: 4, hard: 2 })
+      expect(counts.easy, category).toBeGreaterThanOrEqual(4)
+      expect(counts.normal, category).toBeGreaterThanOrEqual(4)
+      expect(counts.hard, category).toBeGreaterThanOrEqual(2)
     }
   })
 
@@ -106,6 +105,16 @@ describe('getRoundQuestions', () => {
       expect(new Set(round.map((q) => q.id)).size).toBe(10)
       expect(round.every((q) => q.category === category)).toBe(true)
     }
+  })
+
+  it('카테고리 문제가 10개보다 많으면 10문제만 중복 없이 뽑는다', () => {
+    const bank = Array.from({ length: 13 }, (_, i) => ({
+      ...questionBank[0],
+      id: `HIS-${String(i + 1).padStart(3, '0')}`,
+    }))
+    const round = getRoundQuestions('history', seededRandom(13), bank)
+    expect(round).toHaveLength(QUESTIONS_PER_ROUND)
+    expect(new Set(round.map((q) => q.id)).size).toBe(QUESTIONS_PER_ROUND)
   })
 
   it('문제 순서가 바뀌어도 정답 판정이 정확하다', () => {
