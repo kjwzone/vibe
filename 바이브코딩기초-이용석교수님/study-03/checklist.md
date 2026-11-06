@@ -53,3 +53,14 @@
 
 - [x] 문제 은행 확장: 카테고리 문제가 10개를 넘으면 라운드마다 10문제 무작위 추출 + 테스트 (D32)
 - [x] `/quiz-add` 스킬이 검증 통과 문제를 `questions.json`에 바로 추가하도록 변경
+
+## 선생님 모드
+
+- [ ] `src/lib/teacher.ts` 결과 파일 생성·검사, 반 요약, 학생 순위, 문항별 정답률, CSV + 테스트
+- [ ] reducer `teacher` 단계, `OPEN_TEACHER`/`CLOSE_TEACHER` + 테스트
+- [ ] 결과 화면 "선생님께 결과 제출" (이름 → 결과 파일 저장)
+- [ ] 시작 화면 [선생님 모드] 버튼, `TeacherScreen` (불러오기, 요약, 성적표, 분야별 평균, 문항 정답률, CSV, 비우기)
+- [ ] 360px 폭: 표는 내부 가로 스크롤, 페이지 넘침 없음
+- [ ] 스킬: teacher-collect, teacher-report, teacher-questions, teacher-verify, teacher-mode(통합) + `class.mjs`
+- [ ] `npm test`, `npm run build`, `npm run lint` 통과
+- [ ] 브라우저: 완주 → 결과 저장 → 선생님 모드 불러오기 → CSV, 기존 순위 등록·키보드 유지

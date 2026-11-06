@@ -39,6 +39,11 @@
 | D31 | 빌드 시 `vite.config.ts`의 자체 플러그인(`inlineAssets`)으로 JS·CSS를 `dist/index.html`에 인라인하고 `base: './'`로 설정 | 사용자 요청(더블클릭 실행). 크롬은 `file://`에서 외부 모듈 스크립트를 막아 빈 화면이 됨. 서드파티 `vite-plugin-singlefile` 대신 30줄 남짓의 자체 플러그인으로 의존성을 늘리지 않음. 개발 서버(`apply: 'build'`)에는 영향 없음. |
 | D32 | 카테고리 문제가 10개를 넘으면 `getRoundQuestions()`가 섞은 뒤 10문제(`QUESTIONS_PER_ROUND`)만 뽑음. 테스트는 카테고리별 10문제 이상, 난이도 4·4·2 이상으로 완화 | 사용자 요청(`/quiz-add`로 실제 추가). PRD v1.1의 "매 게임 10문제씩 무작위 추출"과 같은 방식. 난이도별로 나눠 뽑지 않아 한 판의 난이도 구성은 4·4·2가 보장되지 않음(단순 무작위 추출을 택함). |
 | D33 | `/quiz-leaderboard`는 브라우저에서 내보낸 JSON(`leaderboard/*.json`)을 입력으로 집계하고, 결과도 `leaderboard/`에 씀. 이 폴더는 gitignore | 기록은 localStorage에만 있어 Claude Code가 직접 읽을 수 없음. 브라우저 프로필 폴더를 뒤지는 방식은 침해적이라 제외. 닉네임이 담긴 파일이 커밋되지 않게 함. 브라우저 반영은 덮어쓰기라 사용자가 콘솔 스니펫으로 직접 함. |
+| D34 | 선생님 모드 데이터는 학생이 결과 화면에서 저장한 결과 파일(JSON, `format: "quiz-result", version: 1`)을 선생님이 불러오는 방식 | 사용자 선택. 서버가 없고 기록은 기기별 localStorage에만 있어 여러 기기 성적을 모으려면 파일 전달이 필요. 온라인 순위표(F-15)는 범위 밖 유지. |
+| D35 | 결과 파일에 문항별 정답 여부(`answers[].questionId/category/correct`)를 담음. `quiz_leaderboard` 구조는 그대로 | 사용자 선택(문항별 정답률). 기존 순위 기록과 호환을 깨지 않으려고 별도 파일 형식으로 분리. |
+| D36 | 선생님 모드는 시작 화면 버튼, 잠금 없음. 불러온 데이터는 화면 상태에만 두고 저장하지 않음 | 사용자 선택(잠금 없음). 정적 웹이라 PIN은 보안이 아님. 저장하지 않으면 학생 정보가 공용 PC에 남지 않음. |
+| D37 | CSV는 UTF-8 BOM을 붙여 엑셀에서 한글이 깨지지 않게 함 | 사용자 선택(CSV 내보내기). |
+| D38 | 스킬은 운영용(collect·report·questions·verify)과 통합(teacher-mode)으로 나눔. 파일을 쓰는 report·verify·teacher-mode는 `disable-model-invocation: true`. 통합 스킬은 호출 불가 스킬의 SKILL.md를 읽고 절차를 따름 | 사용자 요청. Claude가 disable 스킬을 Skill 도구로 부를 수 없기 때문. |
 
 ## 열린 질문
 
