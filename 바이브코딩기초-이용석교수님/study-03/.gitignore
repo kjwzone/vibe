@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 플레이어 닉네임이 들어 있는 리더보드 집계 결과 (/quiz-leaderboard)
+leaderboard/
