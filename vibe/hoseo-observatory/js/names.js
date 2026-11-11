@@ -18,9 +18,12 @@ export function pickName(usedNames, random = Math.random) {
 }
 
 // 상대와 이름이 같을 때 내가 다시 뽑아야 하는지 정한다.
-// 나중에 들어온 쪽이 양보하고, 들어온 시각이 같으면 연결 ID가 큰 쪽이 양보한다.
+// 그 이름을 나중에 가진 쪽(고른 시각 nameAt, 없으면 들어온 시각 joinedAt)이 양보하고,
+// 시각이 같으면 연결 ID가 큰 쪽이 양보한다.
 export function shouldYieldName(me, other) {
   if (me.name !== other.name) return false;
-  if (other.joinedAt !== me.joinedAt) return other.joinedAt < me.joinedAt;
+  const mine = me.nameAt ?? me.joinedAt;
+  const theirs = other.nameAt ?? other.joinedAt;
+  if (theirs !== mine) return theirs < mine;
   return other.id < me.id;
 }

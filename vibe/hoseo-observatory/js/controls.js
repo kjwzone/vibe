@@ -12,9 +12,11 @@ const CAMERA_LIFT = 0.6;
 const PITCH_MIN = -85;
 const PITCH_MAX = 85;
 const NAKED_FOV = 60;
-const TELESCOPE_FOV = 8;
-const TELESCOPE_REACH = 2;
+const TELESCOPE_FOV_MAX = 8;
+const TELESCOPE_FOV_MIN = 0.8;
 const TURN_SECONDS = 0.8;
+const CLICK_SLOP = 6;
+const ARRIVE_DIST = 0.15;
 const HALL = { x: -15, z: -9, r: 4.4 };
 const KEYS = {
   KeyW: 'forward', ArrowUp: 'forward', KeyS: 'back', ArrowDown: 'back',
@@ -38,7 +40,7 @@ function checkBlocked(x, z) {
 }
 
 // 조작기를 만든다. az(방위각)와 alt(고도)는 지금 바라보는 방향이다.
-export function createControls({ camera, dom, character, start = new THREE.Vector3(0, 0, 1) }) {
+export function createControls({ camera, dom, character, scene, start = new THREE.Vector3(0, 0, 1) }) {
   const pressed = new Set();
   const pos = start.clone();
   let az = 0;
@@ -46,8 +48,36 @@ export function createControls({ camera, dom, character, start = new THREE.Vecto
   let mode = 'walk';
   let turn = null;
   let drag = null;
+  let walkTarget = null;
   const dir = new THREE.Vector3();
   const head = new THREE.Vector3();
+  const raycaster = new THREE.Raycaster();
+  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const hit = new THREE.Vector3();
+
+  // 클릭한 도착점에 잠깐 보이는 작은 고리
+  const marker = new THREE.Mesh(
+    new THREE.RingGeometry(0.22, 0.32, 32),
+    new THREE.MeshBasicMaterial({ color: '#ffd98a', transparent: true, opacity: 0, depthWrite: false }),
+  );
+  marker.rotation.x = -Math.PI / 2;
+  marker.position.y = 0.04;
+  marker.renderOrder = 6;
+  scene.add(marker);
+
+  // 화면의 한 점을 땅 위 좌표로 바꿔 걸어갈 곳으로 정한다. 하늘을 누르면 아무 일도 없다.
+  function setWalkTarget(clientX, clientY) {
+    const rect = dom.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(ndc, camera);
+    if (!raycaster.ray.intersectPlane(groundPlane, hit)) return;
+    const r = Math.hypot(hit.x, hit.z);
+    if (r > PLAZA_RADIUS - 0.5) hit.multiplyScalar((PLAZA_RADIUS - 0.5) / r);
+    walkTarget = hit.clone().setY(0);
+    marker.position.x = walkTarget.x;
+    marker.position.z = walkTarget.z;
+    marker.material.opacity = 0.9;
+  }
 
   window.addEventListener('keydown', (e) => {
     if (KEYS[e.code]) {
@@ -58,19 +88,26 @@ export function createControls({ camera, dom, character, start = new THREE.Vecto
   window.addEventListener('keyup', (e) => pressed.delete(KEYS[e.code]));
   window.addEventListener('blur', () => pressed.clear());
 
+  // 짧게 누르면 그 자리로 걷고, CLICK_SLOP 픽셀 넘게 끌면 시점을 돌린다.
   dom.addEventListener('pointerdown', (e) => {
-    drag = { x: e.clientX, y: e.clientY };
+    drag = { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
     dom.setPointerCapture(e.pointerId);
   });
   dom.addEventListener('pointermove', (e) => {
     if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < CLICK_SLOP) return;
+    drag.moved = true;
     const scale = (camera.fov / NAKED_FOV) * 0.25;
     az = normalizeAz(az - (e.clientX - drag.x) * scale);
     alt = Math.min(PITCH_MAX, Math.max(PITCH_MIN, alt + (e.clientY - drag.y) * scale));
-    drag = { x: e.clientX, y: e.clientY };
+    drag.x = e.clientX;
+    drag.y = e.clientY;
     turn = null;
   });
-  dom.addEventListener('pointerup', () => { drag = null; });
+  dom.addEventListener('pointerup', (e) => {
+    if (drag && !drag.moved && mode === 'walk') setWalkTarget(e.clientX, e.clientY);
+    drag = null;
+  });
   dom.addEventListener('pointercancel', () => { drag = null; });
 
   function walk(dt) {
@@ -80,16 +117,42 @@ export function createControls({ camera, dom, character, start = new THREE.Vecto
     if (pressed.has('back')) f -= 1;
     if (pressed.has('right')) s += 1;
     if (pressed.has('left')) s -= 1;
-    if (f === 0 && s === 0) return;
-    const yaw = az * (Math.PI / 180);
-    const len = Math.hypot(f, s);
-    const step = (WALK_SPEED * dt) / len;
-    const dx = (Math.sin(yaw) * f + Math.cos(yaw) * s) * step;
-    const dz = (-Math.cos(yaw) * f + Math.sin(yaw) * s) * step;
-    // 한 축씩 움직여 벽을 따라 미끄러지게 한다.
-    if (!checkBlocked(pos.x + dx, pos.z)) pos.x += dx;
-    if (!checkBlocked(pos.x, pos.z + dz)) pos.z += dz;
+    let dx = 0;
+    let dz = 0;
+    if (f !== 0 || s !== 0) {
+      // 키보드로 걸으면 클릭으로 정한 도착점은 취소한다.
+      walkTarget = null;
+      const yaw = az * (Math.PI / 180);
+      const step = (WALK_SPEED * dt) / Math.hypot(f, s);
+      dx = (Math.sin(yaw) * f + Math.cos(yaw) * s) * step;
+      dz = (-Math.cos(yaw) * f + Math.sin(yaw) * s) * step;
+    } else if (walkTarget) {
+      const rx = walkTarget.x - pos.x;
+      const rz = walkTarget.z - pos.z;
+      const dist = Math.hypot(rx, rz);
+      if (dist < ARRIVE_DIST) {
+        walkTarget = null;
+        return;
+      }
+      const step = Math.min(WALK_SPEED * dt, dist);
+      dx = (rx / dist) * step;
+      dz = (rz / dist) * step;
+    } else {
+      return;
+    }
+    // 한 축씩 움직여 벽을 따라 미끄러지게 한다. 두 축 모두 막히면 클릭 이동을 멈춘다.
+    const movedX = !checkBlocked(pos.x + dx, pos.z);
+    if (movedX) pos.x += dx;
+    const movedZ = !checkBlocked(pos.x, pos.z + dz);
+    if (movedZ) pos.z += dz;
+    if (!movedX && !movedZ) walkTarget = null;
     character.root.rotation.y = Math.atan2(-dx, -dz);
+  }
+
+  function fadeMarker(dt) {
+    const m = marker.material;
+    if (m.opacity <= 0) return;
+    m.opacity = walkTarget ? Math.max(0.35, m.opacity - dt * 0.8) : Math.max(0, m.opacity - dt * 2);
   }
 
   function updateTurn(dt) {
@@ -119,6 +182,7 @@ export function createControls({ camera, dom, character, start = new THREE.Vecto
 
   function update(dt) {
     if (mode === 'walk') walk(dt);
+    fadeMarker(dt);
     updateTurn(dt);
     character.root.position.copy(pos);
     placeCamera();
@@ -129,17 +193,29 @@ export function createControls({ camera, dom, character, start = new THREE.Vecto
     camera.updateProjectionMatrix();
   }
 
+  // 망원경 보기에서 시야각을 곱해 확대·축소한다(8°~0.8°). 0.8°면 행성이 달처럼 크게 보인다.
+  function zoomTelescope(factor) {
+    if (mode !== 'telescope') return;
+    setFov(Math.min(TELESCOPE_FOV_MAX, Math.max(TELESCOPE_FOV_MIN, camera.fov * factor)));
+  }
+
+  dom.addEventListener('wheel', (e) => {
+    if (mode !== 'telescope') return;
+    e.preventDefault();
+    zoomTelescope(e.deltaY > 0 ? 1.15 : 1 / 1.15);
+  }, { passive: false });
+
   return {
     update,
+    zoomTelescope,
     get mode() { return mode; },
     get position() { return pos; },
-    isNearTelescope() {
-      return Math.hypot(pos.x - TELESCOPE_POSITION.x, pos.z - TELESCOPE_POSITION.z) <= TELESCOPE_REACH;
-    },
+    // 망원경 보기는 어디서든 고를 수 있고, 시점은 관측소 망원경 자리로 옮겨 간다.
     enterTelescope() {
       mode = 'telescope';
       pressed.clear();
-      setFov(TELESCOPE_FOV);
+      walkTarget = null;
+      setFov(TELESCOPE_FOV_MAX);
     },
     exitTelescope() {
       mode = 'walk';

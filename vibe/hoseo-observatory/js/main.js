@@ -7,8 +7,10 @@ import { createUi } from './ui.js';
 import { createCharacter, CHARACTER_COLORS } from './character.js';
 import { createControls } from './controls.js';
 import { connectRoom } from './net.js';
-import { pickName, shouldYieldName } from './names.js';
+import { NAMES, pickName, shouldYieldName } from './names.js';
 import { createSound } from './sound.js';
+import { createPhotoViewer, hasPhoto } from './photo.js';
+import { computeSeparation } from './astro.js';
 
 const SKY_UPDATE_MS = 10000;
 const POSE_SEND_MS = 200;
@@ -24,15 +26,32 @@ const world = createWorld();
 const sky = createSky(world.scene);
 sky.update(new Date());
 
-// 나
+// 나: 전에 고른 이름이 이 브라우저에 있으면 그 이름으로, 없으면 무작위로 시작한다.
+const NAME_KEY = 'hoseo-observatory-name';
+function loadSavedName() {
+  try {
+    const saved = localStorage.getItem(NAME_KEY);
+    return NAMES.includes(saved) ? saved : null;
+  } catch {
+    return null;
+  }
+}
+function saveName(name) {
+  try {
+    localStorage.setItem(NAME_KEY, name);
+  } catch {
+    // 저장이 막혀 있어도 이번 접속에서는 고른 이름을 그대로 쓴다.
+  }
+}
 const me = {
-  name: pickName([]),
+  name: loadSavedName() || pickName([]),
   joinedAt: Date.now(),
+  nameAt: Date.now(),
   color: CHARACTER_COLORS[Math.floor(Math.random() * CHARACTER_COLORS.length)],
 };
 const myCharacter = createCharacter({ color: me.color, name: me.name });
 world.scene.add(myCharacter.root);
-const controls = createControls({ camera, dom: renderer.domElement, character: myCharacter });
+const controls = createControls({ camera, dom: renderer.domElement, character: myCharacter, scene: world.scene });
 
 // 함께 있는 사람들
 const peers = new Map();
@@ -40,7 +59,7 @@ let lastSent = { t: 0, key: '' };
 
 function getPose() {
   const p = controls.position;
-  return { x: +p.x.toFixed(2), z: +p.z.toFixed(2), yaw: +myCharacter.root.rotation.y.toFixed(2), name: me.name, joinedAt: me.joinedAt, color: me.color };
+  return { x: +p.x.toFixed(2), z: +p.z.toFixed(2), yaw: +myCharacter.root.rotation.y.toFixed(2), name: me.name, joinedAt: me.joinedAt, nameAt: me.nameAt, color: me.color };
 }
 
 function removePeer(peerId) {
@@ -50,12 +69,30 @@ function removePeer(peerId) {
   peers.delete(peerId);
 }
 
+function getUsedNames() {
+  return [...peers.values()].map((p) => p.name);
+}
+
+// 내 이름을 바꾸고 바로 모두에게 알린다.
+function setMyName(name) {
+  me.name = name;
+  me.nameAt = Date.now();
+  myCharacter.setName(name);
+  net.sendPose(getPose());
+}
+
+// 목록에서 고른 이름: 이 브라우저에 기억해 두고 다음 접속에도 쓴다.
+function chooseName(name) {
+  if (getUsedNames().includes(name)) return;
+  saveName(name);
+  setMyName(name);
+}
+
 // 상대와 이름이 겹치면 규칙에 따라 내가 다시 뽑고 바로 알린다.
 function resolveNameConflict(peerId, data) {
-  if (!shouldYieldName({ ...me, id: net.selfId }, { name: data.name, joinedAt: data.joinedAt, id: peerId })) return;
-  me.name = pickName([...peers.values()].map((p) => p.name));
-  myCharacter.setName(me.name);
-  net.sendPose(getPose());
+  const other = { name: data.name, joinedAt: data.joinedAt, nameAt: data.nameAt, id: peerId };
+  if (!shouldYieldName({ ...me, id: net.selfId }, other)) return;
+  setMyName(pickName(getUsedNames()));
 }
 
 function receivePose(peerId, data) {
@@ -157,29 +194,75 @@ function pickTarget(pick) {
   controls.turnTo(target.az, target.alt);
 }
 
+// 망원경 보기: 천체를 빛 점 대신 원반 그림으로 보이고, 내 캐릭터와 망원경 모형은 숨긴다
+// (망원경 자리에서 낮게 내려다보면 모형이 시야를 가리기 때문이다).
+function enterTelescope() {
+  controls.enterTelescope();
+  sky.setTelescopeMode(true);
+  myCharacter.root.visible = false;
+  world.telescope.visible = false;
+}
+
+function leaveTelescope() {
+  controls.exitTelescope();
+  sky.setTelescopeMode(false);
+  photoViewer.show(null);
+  myCharacter.root.visible = true;
+  world.telescope.visible = true;
+}
+
+// 가장 크게 확대했을 때 화면 가운데(0.4° 안)에 사진이 있는 천체가 있으면 그 사진을 띄운다.
+const photoViewer = createPhotoViewer();
+const PHOTO_FOV = 0.85;
+const viewDir = new THREE.Vector3();
+function updatePhoto() {
+  if (controls.mode !== 'telescope' || camera.fov > PHOTO_FOV) {
+    photoViewer.show(null);
+    return;
+  }
+  camera.getWorldDirection(viewDir);
+  const view = { alt: Math.asin(viewDir.y) * (180 / Math.PI), az: (Math.atan2(viewDir.x, -viewDir.z) * (180 / Math.PI) + 360) % 360 };
+  const hit = sky.bodies.find((b) => hasPhoto(b.id) && computeSeparation(view, b) < 0.4);
+  photoViewer.show(hit ? hit.id : null);
+}
+
+// 인트로가 끝나면 천문대 화면으로 들어온다. UI는 처음 한 번만 만들고, 다시 볼 때는 보이게만 한다.
 function startObservatory() {
   mode = 'observatory';
-  ui = createUi({
-    sky,
-    onPick: pickTarget,
-    onTelescope: () => {
-      controls.enterTelescope();
-      myCharacter.root.visible = false;
-    },
-    onNakedEye: () => {
-      controls.exitTelescope();
-      myCharacter.root.visible = true;
-    },
-    onGreet: () => {
-      myCharacter.bow();
-      net.sendGreet();
-    },
-    onSound: toggleSound,
-  });
+  sound.setSuspended(false);
+  if (ui) {
+    ui.setVisible(true);
+  } else {
+    ui = createUi({
+      sky,
+      onPick: pickTarget,
+      onTelescope: enterTelescope,
+      onNakedEye: leaveTelescope,
+      onZoom: (factor) => controls.zoomTelescope(factor),
+      onGreet: () => {
+        myCharacter.bow();
+        net.sendGreet();
+      },
+      onSound: toggleSound,
+      getNames: () => ({ all: NAMES, used: getUsedNames(), mine: me.name }),
+      onChooseName: chooseName,
+      onReplayIntro: replayIntro,
+    });
+  }
   startSoundIfReady();
 }
 
-const intro = createIntro({ worldCamera: camera, world, onDone: startObservatory });
+let intro = createIntro({ worldCamera: camera, world, onDone: startObservatory });
+
+// 천문대 화면에서 인트로를 처음부터 다시 본다. 끝나면 있던 자리로 돌아온다.
+function replayIntro() {
+  if (controls.mode === 'telescope') leaveTelescope();
+  // 소리는 천문대 장소에서만 들린다. 인트로 동안 멈추고 돌아오면 다시 켠다.
+  sound.setSuspended(true);
+  ui.setVisible(false);
+  mode = 'intro';
+  intro = createIntro({ worldCamera: camera, world, onDone: startObservatory });
+}
 
 setInterval(() => {
   sky.update(new Date());
@@ -203,8 +286,10 @@ function renderFrame(timestamp) {
     target = intro.update(dt, camera.aspect) || target;
   } else {
     controls.update(dt);
-    ui.setViewState({ near: controls.isNearTelescope(), mode: controls.mode });
+    ui.setViewState({ mode: controls.mode });
     sky.setLabelScale(Math.tan((camera.fov * Math.PI) / 360) / Math.tan(Math.PI / 6));
+    if (controls.mode === 'telescope') sky.orientMoon(camera);
+    updatePhoto();
   }
   myCharacter.update(dt);
   updatePeers(dt);
