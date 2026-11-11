@@ -150,6 +150,11 @@ function computeGmst(jd) {
   return normalizeDeg(280.46061837 + 360.98564736629 * (jd - 2451545));
 }
 
+// 관측지의 지방 항성시(도). 남쪽 자오선에 걸린 적경과 같다.
+export function computeLocalSiderealTime(date, site = UMYEONSAN) {
+  return normalizeDeg(computeGmst(toJulianDay(date)) + site.lon);
+}
+
 // 겉보기 고도를 높이는 대기 굴절(도, Saemundsson 식)
 function computeRefraction(alt) {
   if (alt < -1) return 0;

@@ -192,6 +192,14 @@ function pickTarget(pick) {
     ? sky.bodies.find((b) => b.id === pick.id)
     : sky.constellations.find((c) => c.name === pick.name);
   controls.turnTo(target.az, target.alt);
+  // 망원경 보기에서 별자리를 고르면 별자리 전체가 화면 안에 들어오도록 시야를 맞춘다.
+  // 화면 아래 버튼 줄에 가리지 않도록 여유(1.6배)를 둔다.
+  if (pick.kind === 'constellation' && controls.mode === 'telescope') {
+    const margin = 1.6;
+    const fitByHeight = target.radius * 2 * margin;
+    const fitByWidth = (2 * Math.atan(Math.tan((target.radius * margin * Math.PI) / 180) / camera.aspect) * 180) / Math.PI;
+    controls.setTelescopeFov(Math.max(fitByHeight, fitByWidth));
+  }
 }
 
 // 망원경 보기: 천체를 빛 점 대신 원반 그림으로 보이고, 내 캐릭터와 망원경 모형은 숨긴다

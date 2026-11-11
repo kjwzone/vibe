@@ -2,6 +2,8 @@
 import { computeBodyPosition, computeStarPosition, computeRingOpening, computeSeparation, toCompassName, UMYEONSAN } from '../js/astro.js';
 import { POLARIS } from '../js/data/stars.js';
 import { NAMES, pickName, shouldYieldName } from '../js/names.js';
+import { sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac, ZODIAC_ORDER } from '../js/constellation-order.js';
+import { CONSTELLATIONS } from '../js/data/stars.js';
 
 let passed = 0;
 let failed = 0;
@@ -94,6 +96,24 @@ function testSeparation() {
   checkNear('separation_zenithToHorizon', computeSeparation({ az: 0, alt: 90 }, { az: 123, alt: 0 }), 90, 0.001);
 }
 
+// 별자리 정렬: 잘 보이는 순은 고도 내림차순, 자오선 순은 남중까지 남은 시간 순, 묶음 순은 황도 12궁을 양자리부터.
+function testConstellationOrder() {
+  const list = [
+    { name: 'A', abbr: 'Ori', alt: 10, ra: 90 },
+    { name: 'B', abbr: 'UMa', alt: 60, ra: 180 },
+    { name: 'C', abbr: 'Ari', alt: -20, ra: 40 },
+  ];
+  checkEqual('visible_highestFirst', sortByVisibility(list).map((c) => c.name).join(''), 'BAC');
+  // 항성시 85°: 오리온(90°)이 곧 남중, 그다음 큰곰(180°), 양(40°)은 거의 하루 뒤
+  checkEqual('meridian_nextTransitFirst', sortByMeridian(list, 85).map((c) => c.name).join(''), 'ABC');
+  checkNear('meridian_hoursToTransit', computeHoursToTransit(90, 85), 1 / 3, 0.001);
+  checkNear('meridian_justPassedStaysFirst', computeHoursToTransit(80, 85), -1 / 3, 0.001);
+  const groups = groupByZodiac(CONSTELLATIONS);
+  checkEqual('zodiac_twoGroups', groups.map((g) => `${g.title}:${g.items.length}`).join(','), '대표 별자리:8,황도 12궁:12');
+  checkEqual('zodiac_startsWithAries', groups[1].items.map((c) => c.abbr).join(','), ZODIAC_ORDER.join(','));
+}
+
+testConstellationOrder();
 testRingOpening();
 testSeparation();
 testPickName();

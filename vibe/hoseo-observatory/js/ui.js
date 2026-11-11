@@ -1,5 +1,6 @@
 // 천문대 화면의 조용한 버튼 줄, 천체·별자리·이름 목록, 고른 천체 정보 카드, 망원경·확대·인사 버튼
-import { toCompassName } from './astro.js';
+import { toCompassName, computeLocalSiderealTime } from './astro.js';
+import { SORT_MODES, sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac } from './constellation-order.js';
 
 const GREET_COOLDOWN_MS = 3000;
 
@@ -36,6 +37,7 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
   let openKind = null;
   let picked = null;
   let greetReadyAt = 0;
+  let constellationSort = 'visible';
 
   function formatMeta(below, az) {
     return below ? '지평선 아래' : toCompassName(az);
@@ -60,22 +62,66 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
     });
   }
 
+  function renderItem(it) {
+    const li = document.createElement('li');
+    li.className = it.below ? 'is-below' : '';
+    li.innerHTML = `<span class="name">${it.label}</span><span class="meta">${it.meta ?? formatMeta(it.below, it.az)}</span>`;
+    li.addEventListener('click', () => {
+      picked = it.pick;
+      onPick(it.pick);
+      refresh();
+    });
+    return li;
+  }
+
+  function toConstellationItem(c, meta) {
+    return { label: c.name, below: c.alt < 0, az: c.az, meta, pick: { kind: 'constellation', name: c.name } };
+  }
+
+  // 남쪽 자오선을 지나기까지 남은 시간을 "남중 2시간 10분 뒤"처럼 적는다.
+  function formatTransit(hours) {
+    if (hours < 0.1) return '지금 남중';
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return `남중 ${h ? `${h}시간 ` : ''}${m ? `${m}분 ` : ''}뒤`;
+  }
+
+  // 별자리 목록: 고른 정렬 기준에 따라 순서를 바꾼다. 묶음 순은 묶음마다 작은 제목을 단다.
+  function renderConstellations() {
+    if (constellationSort === 'zodiac') {
+      return groupByZodiac(sky.constellations).flatMap((g) => {
+        const heading = document.createElement('li');
+        heading.className = 'ui-panel-heading';
+        heading.textContent = g.title;
+        return [heading, ...g.items.map((c) => renderItem(toConstellationItem(c)))];
+      });
+    }
+    if (constellationSort === 'meridian') {
+      const lst = computeLocalSiderealTime(new Date());
+      return sortByMeridian(sky.constellations, lst)
+        .map((c) => renderItem(toConstellationItem(c, formatTransit(computeHoursToTransit(c.ra, lst)))));
+    }
+    return sortByVisibility(sky.constellations).map((c) => renderItem(toConstellationItem(c)));
+  }
+
+  function renderSortBar() {
+    const sortBar = document.createElement('div');
+    sortBar.className = 'ui-sort';
+    SORT_MODES.forEach((m) => {
+      const b = createButton(m.label, () => {
+        constellationSort = m.id;
+        refresh();
+      }, `ui-sort-button${m.id === constellationSort ? ' is-active' : ''}`);
+      b.setAttribute('aria-pressed', String(m.id === constellationSort));
+      sortBar.append(b);
+    });
+    return sortBar;
+  }
+
   function renderList() {
     if (openKind === 'name') return renderNames();
-    const items = openKind === 'body'
-      ? sky.bodies.map((b) => ({ label: b.name, below: b.below, az: b.az, pick: { kind: 'body', id: b.id } }))
-      : sky.constellations.map((c) => ({ label: c.name, below: c.alt < 0, az: c.az, pick: { kind: 'constellation', name: c.name } }));
-    return items.map((it) => {
-      const li = document.createElement('li');
-      li.className = it.below ? 'is-below' : '';
-      li.innerHTML = `<span class="name">${it.label}</span><span class="meta">${formatMeta(it.below, it.az)}</span>`;
-      li.addEventListener('click', () => {
-        picked = it.pick;
-        onPick(it.pick);
-        refresh();
-      });
-      return li;
-    });
+    if (openKind === 'constellation') return renderConstellations();
+    return sky.bodies.map((b) => renderItem({ label: b.name, below: b.below, az: b.az, pick: { kind: 'body', id: b.id } }));
   }
 
   function renderCard() {
@@ -105,7 +151,10 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
     if (openKind) {
       const list = document.createElement('ul');
       list.append(...renderList());
-      panel.replaceChildren(list);
+      // 10초마다 다시 그려도 보던 자리가 튀지 않게 스크롤 위치를 지킨다.
+      const scroll = panel.scrollTop;
+      panel.replaceChildren(...(openKind === 'constellation' ? [renderSortBar(), list] : [list]));
+      panel.scrollTop = scroll;
     }
     renderCard();
   }

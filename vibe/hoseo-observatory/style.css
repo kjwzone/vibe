@@ -182,7 +182,7 @@ body.is-intro .ui-hint { display: none; }
 
 .ui-panel {
   align-self: flex-start;
-  width: min(240px, calc(100vw - 32px));
+  width: min(280px, calc(100vw - 32px));
   max-height: 45vh;
   overflow-y: auto;
   scrollbar-color: rgba(160, 180, 220, 0.25) transparent;
@@ -193,6 +193,37 @@ body.is-intro .ui-hint { display: none; }
   font-size: 14px;
 }
 .ui-panel ul { list-style: none; margin: 0; padding: 6px 0; }
+
+/* 별자리 정렬 버튼: 목록 위에 붙어 스크롤해도 보인다. */
+.ui-sort {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: 4px;
+  padding: 8px 8px 6px;
+  background: rgba(8, 12, 24, 0.96);
+  border-bottom: 1px solid var(--line);
+}
+.ui-sort-button {
+  flex: 1;
+  padding: 5px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ui-sort-button.is-active { color: var(--ink); border-color: rgba(200, 215, 245, 0.5); background: rgba(160, 180, 220, 0.12); }
+.ui-panel li.ui-panel-heading {
+  padding: 10px 14px 4px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: default;
+}
+.ui-panel li.ui-panel-heading:hover { background: none; }
 .ui-panel li {
   display: flex;
   justify-content: space-between;

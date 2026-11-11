@@ -77,7 +77,14 @@ function createConstellations(group) {
     label.material.color.set('#8ea3cf');
     label.material.opacity = 0.75;
     group.add(lines, label);
-    return { name: c.name, data: c, lines, label, az: 0, alt: 0 };
+    // 별자리 가운데의 적경(J2000, 도): 자오선 순 정렬에 쓴다. 별들의 방향을 평균해 구한다.
+    const sum = c.stars.reduce((acc, [ra, dec]) => {
+      const r = ra * RAD;
+      const d = dec * RAD;
+      return acc.add(new THREE.Vector3(Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)));
+    }, new THREE.Vector3());
+    const ra = ((Math.atan2(sum.y, sum.x) / RAD) + 360) % 360;
+    return { name: c.name, abbr: c.abbr, ra, data: c, lines, label, az: 0, alt: 0 };
   });
 }
 
@@ -139,6 +146,8 @@ export function createSky(scene) {
       const center = vecs.reduce((acc, v) => acc.add(v), new THREE.Vector3()).normalize();
       c.alt = Math.asin(center.y) / RAD;
       c.az = ((Math.atan2(center.x, -center.z) / RAD) + 360) % 360;
+      // 가운데에서 가장 먼 별까지의 각거리(도): 망원경에서 별자리 전체가 들어오게 시야를 맞출 때 쓴다.
+      c.radius = Math.max(...vecs.map((v) => Math.acos(Math.min(1, v.clone().normalize().dot(center))) / RAD));
       c.label.position.copy(center.multiplyScalar(SKY_RADIUS * 0.99));
     });
   }
