@@ -1,4 +1,7 @@
-// 멀리서 가끔 우는 부엉이 소리를 불규칙하게 들려주고 끄고 켠다(D15). 계속 나는 소리는 없다.
+// 실내에서 듣는 듯한 작은 밤 도로 소리를 깔고, 멀리서 가끔 부엉이가 울게 하며, 끄고 켠다(D15, D18).
+// 도로 소리: 창 너머처럼 고음을 강하게 눌러 아주 작게, 끊김 없이 반복한다.
+const ROAD = { url: 'sounds/road.mp3', volume: 0.15, lowpassHz: 700 };
+const SEAM_S = 1.5;
 // 부엉이: 첫 울음은 곧, 그 뒤로는 15~40초 사이 무작위 간격으로 계속 반복한다. 두 녹음 중 하나를 멀리서 들리듯 작게 울린다.
 const OWL = {
   urls: ['sounds/owl-1.mp3', 'sounds/owl-2.mp3'],
@@ -9,8 +12,25 @@ const OWL = {
   soonMinS: 3,
   soonMaxS: 8,
 };
-const FADE_IN_S = 1;
+const FADE_IN_S = 3;
 const TOGGLE_FADE_S = 0.4;
+
+// 끝 SEAM_S초를 처음과 겹쳐 섞은 새 버퍼를 만든다. 반복할 때 끝에서 처음으로 이어진다.
+function createSeamlessBuffer(ctx, buffer) {
+  const seam = Math.min(Math.floor(SEAM_S * buffer.sampleRate), Math.floor(buffer.length / 4));
+  const length = buffer.length - seam;
+  const out = ctx.createBuffer(buffer.numberOfChannels, length, buffer.sampleRate);
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const src = buffer.getChannelData(c);
+    const dst = out.getChannelData(c);
+    dst.set(src.subarray(0, length));
+    for (let i = 0; i < seam; i++) {
+      const k = i / seam;
+      dst[i] = src[i] * k + src[length + i] * (1 - k);
+    }
+  }
+  return out;
+}
 
 // 소리 장치를 만든다. unlock()은 반드시 클릭이나 키 입력 처리 중에 불러야 한다(자동 재생 제한).
 export function createSound() {
@@ -18,6 +38,8 @@ export function createSound() {
   let master = null;
   let started = false;
   let enabled = true;
+  // 인트로를 다시 보는 동안처럼 천문대 장소가 아닐 때 잠시 멈춘다. 사용자의 켜기·끄기(enabled)와 따로 둔다.
+  let suspended = false;
   let owlBuffers = [];
   let owlTimer = null;
 
@@ -54,41 +76,74 @@ export function createSound() {
   function scheduleOwl(minS, maxS) {
     clearTimeout(owlTimer);
     owlTimer = setTimeout(() => {
-      if (enabled) playOwl();
+      if (enabled && !suspended) playOwl();
       scheduleOwl(OWL.minGapS, OWL.maxGapS);
     }, randomBetween(minS, maxS) * 1000);
   }
 
-  // 부엉이 녹음을 불러오고, 곧 첫 울음을 예약한다.
+  async function loadBuffer(url) {
+    return ctx.decodeAudioData(await (await fetch(url)).arrayBuffer());
+  }
+
+  // 도로 소리를 끊김 없이 반복 재생한다.
+  function startRoad(buffer) {
+    const source = ctx.createBufferSource();
+    source.buffer = createSeamlessBuffer(ctx, buffer);
+    source.loop = true;
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = ROAD.lowpassHz;
+    const gain = ctx.createGain();
+    gain.gain.value = ROAD.volume;
+    source.connect(lowpass).connect(gain).connect(master);
+    source.start();
+  }
+
+  // 도로 소리와 부엉이 녹음을 불러와 도로 소리를 깔고, 곧 첫 부엉이 울음을 예약한다.
   async function start() {
     if (started || !ctx) return;
     started = true;
     try {
-      owlBuffers = await Promise.all(OWL.urls.map(async (url) => ctx.decodeAudioData(await (await fetch(url)).arrayBuffer())));
+      const [road, ...owls] = await Promise.all([ROAD.url, ...OWL.urls].map(loadBuffer));
+      owlBuffers = owls;
+      startRoad(road);
       const t = ctx.currentTime;
       master.gain.setValueAtTime(0, t);
-      if (enabled) master.gain.linearRampToValueAtTime(1, t + FADE_IN_S);
+      if (enabled && !suspended) master.gain.linearRampToValueAtTime(1, t + FADE_IN_S);
       scheduleOwl(OWL.soonMinS, OWL.soonMaxS);
     } catch (err) {
-      console.warn('부엉이 소리를 불러오지 못했습니다.', err);
+      console.warn('소리를 불러오지 못했습니다.', err);
     }
+  }
+
+  // 켜져 있고 멈춤 상태가 아닐 때만 들리게 음량을 맞춘다.
+  function applyGain() {
+    if (!ctx) return;
+    const audible = enabled && !suspended;
+    const now = ctx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value, now);
+    master.gain.linearRampToValueAtTime(audible ? 1 : 0, now + TOGGLE_FADE_S);
+    if (audible && owlBuffers.length) scheduleOwl(OWL.soonMinS, OWL.soonMaxS);
   }
 
   // 끄면 소리를 줄여 멈추고, 다시 켜면 곧 한 번 울려 켜졌음을 알린다.
   function setEnabled(on) {
     enabled = on;
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    master.gain.cancelScheduledValues(now);
-    master.gain.setValueAtTime(master.gain.value, now);
-    master.gain.linearRampToValueAtTime(on ? 1 : 0, now + TOGGLE_FADE_S);
-    if (on && owlBuffers.length) scheduleOwl(OWL.soonMinS, OWL.soonMaxS);
+    applyGain();
+  }
+
+  // 천문대 장소를 떠나면(인트로 다시 보기) 멈추고, 돌아오면 다시 들린다.
+  function setSuspended(on) {
+    suspended = on;
+    applyGain();
   }
 
   return {
     unlock,
     start,
     setEnabled,
+    setSuspended,
     get unlocked() { return Boolean(ctx); },
     get started() { return started; },
     get enabled() { return enabled; },

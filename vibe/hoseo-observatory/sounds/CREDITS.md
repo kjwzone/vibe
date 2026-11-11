@@ -4,6 +4,8 @@
 |---|---|---|---|---|---|
 | owl-1.mp3 | Tawny Owl #3 (#3459) | Joseph SARDIN | https://bigsoundbank.com/tawny-owl-3-s3459.html (파일: https://bigsoundbank.com/UPLOAD/mp3/3459.mp3) | CC0 (public domain) | 2026-11-12 |
 | owl-2.mp3 | Tawny Owl #4 (#3460) | Joseph SARDIN | https://bigsoundbank.com/tawny-owl-4-s3460.html (파일: https://bigsoundbank.com/UPLOAD/mp3/3460.mp3) | CC0 (public domain) | 2026-11-12 |
+| road.mp3 | Night after rain (#621) | Joseph SARDIN | https://bigsoundbank.com/night-after-rain-s0621.html (파일: https://bigsoundbank.com/UPLOAD/mp3/0621.mp3) | CC0 (public domain) | 2026-11-12 |
 
-- 두 파일은 올빼미(Strix aluco) 한 마디씩, 각 2초.
+- owl 두 파일은 올빼미(Strix aluco) 한 마디씩, 각 2초.
+- road.mp3는 비 온 뒤 겨울밤의 웅웅거림과 도로 소리, 1분 7초. 실내에서 듣는 백색 소음으로 쓴다.
 - 원본 그대로이며 편집하지 않았다. 음량, 고음 줄이기, 좌우 위치, 높낮이는 재생할 때 코드(js/sound.js)에서 처리한다.
