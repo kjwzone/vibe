@@ -1,0 +1,151 @@
+/* 우면산 호서 천문대의 화면 공통 스타일 */
+:root {
+  --ink: #cfd6e6;
+  --ink-dim: #7d879c;
+  --ink-below: #6b6f78;
+  --panel: rgba(8, 12, 24, 0.72);
+  --line: rgba(160, 180, 220, 0.18);
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #02030a;
+  color: var(--ink);
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+}
+
+canvas { display: block; }
+
+button { font: inherit; color: inherit; }
+
+/* 인트로 */
+.intro-caption {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 14vh;
+  text-align: center;
+  font-size: clamp(18px, 2.6vw, 28px);
+  letter-spacing: 0.12em;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+.intro-caption.is-visible { opacity: 0.9; }
+
+.intro-fade {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.intro-fade.is-visible { opacity: 1; }
+
+.intro-skip {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+.intro-skip:hover { color: var(--ink); }
+
+/* 천문대 화면 */
+.ui-bar {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+}
+.ui-button {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 13px;
+  cursor: pointer;
+}
+.ui-button:hover { border-color: rgba(200, 215, 245, 0.4); }
+.ui-button.is-waiting { opacity: 0.35; cursor: default; }
+
+.ui-hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 18px;
+  text-align: center;
+  color: var(--ink-dim);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+.ui-view {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+}
+
+.ui-card {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  width: min(220px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 13px;
+}
+.ui-card-name { font-size: 16px; margin-bottom: 8px; padding-right: 20px; }
+.ui-card-row { display: flex; justify-content: space-between; color: var(--ink-dim); margin-top: 3px; }
+.ui-card-row span:last-child { color: var(--ink); font-variant-numeric: tabular-nums; }
+.ui-card-below { margin-top: 8px; color: var(--ink-below); }
+.ui-card.is-below .ui-card-name,
+.ui-card.is-below .ui-card-row span:last-child { color: var(--ink-below); }
+.ui-card-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ui-panel {
+  position: fixed;
+  left: 16px;
+  bottom: 60px;
+  width: min(240px, calc(100vw - 32px));
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-color: rgba(160, 180, 220, 0.25) transparent;
+  scrollbar-width: thin;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 14px;
+}
+.ui-panel ul { list-style: none; margin: 0; padding: 6px 0; }
+.ui-panel li {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.ui-panel li:hover { background: rgba(160, 180, 220, 0.08); }
+.ui-panel .meta { color: var(--ink-dim); font-size: 12px; }
+.ui-panel li.is-below .name,
+.ui-panel li.is-below .meta { color: var(--ink-below); }
