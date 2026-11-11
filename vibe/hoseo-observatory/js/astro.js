@@ -182,6 +182,28 @@ export function computeStarPosition(raJ2000, decJ2000, date, site = UMYEONSAN) {
   return toHorizontal(p.ra, p.dec, jd, site);
 }
 
+// 행성 자전축 북극의 적경·적위(도, IAU). 고리가 보이는 기울기를 계산할 때 쓴다.
+const POLES = {
+  saturn: { ra: 40.589, dec: 83.537 },
+  uranus: { ra: 257.311, dec: -15.175 },
+  neptune: { ra: 299.36, dec: 43.46 },
+};
+
+// 지구에서 본 고리 기울기(도). 0이면 고리가 옆으로 누워 선처럼, 90이면 동그랗게 보인다.
+export function computeRingOpening(id, date) {
+  const pole = POLES[id];
+  if (!pole) return 0;
+  const eq = computeEquatorial(id, toJulianDay(date));
+  const s = sinD(pole.dec) * sinD(eq.dec) + cosD(pole.dec) * cosD(eq.dec) * cosD(pole.ra - eq.ra);
+  return Math.asin(Math.abs(s)) * DEG;
+}
+
+// 두 방향(방위각·고도) 사이의 각거리(도). 달의 위상과 망원경 가운데 판정에 쓴다.
+export function computeSeparation(a, b) {
+  const c = sinD(a.alt) * sinD(b.alt) + cosD(a.alt) * cosD(b.alt) * cosD(a.az - b.az);
+  return Math.acos(Math.min(1, Math.max(-1, c))) * DEG;
+}
+
 // 방위각을 8방위 한글 이름으로 바꾼다.
 export function toCompassName(az) {
   const names = ['북', '북동', '동', '남동', '남', '남서', '서', '북서'];

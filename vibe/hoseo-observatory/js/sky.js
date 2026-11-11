@@ -1,8 +1,9 @@
 // 우면산에서 올려다본 천구: 방위 글자, 태양·달·행성, 별, 별자리 선을 그리고 시각에 맞춰 옮긴다
 import * as THREE from '../vendor/three.module.min.js';
-import { computeBodyPosition, computeStarPosition } from './astro.js';
+import { computeBodyPosition, computeStarPosition, computeRingOpening, computeSeparation } from './astro.js';
 import { CONSTELLATIONS, STARS } from './data/stars.js';
 import { createTextSprite, createGlowTexture, createDiscTexture } from './labels.js';
+import { createBodyTexture, getDiscRadius } from './planet-art.js';
 
 export const SKY_RADIUS = 500;
 const RAD = Math.PI / 180;
@@ -89,8 +90,13 @@ function createBodies(group) {
     }));
     sprite.scale.set(b.size, b.size, 1);
     const label = createTextSprite(b.name, { height: 12 });
-    group.add(sprite, label);
-    return { ...b, sprite, label, az: 0, alt: 0, below: false };
+    // 망원경 모습: 원반 지름이 size가 되도록 캔버스 전체 크기를 맞춘다(고리는 그 바깥으로 그려진다).
+    const detail = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
+    const span = (b.size * 512) / (2 * getDiscRadius(b.id));
+    detail.scale.set(span, span, 1);
+    detail.visible = false;
+    group.add(sprite, label, detail);
+    return { ...b, sprite, label, detail, az: 0, alt: 0, below: false };
   });
 }
 
@@ -155,10 +161,55 @@ export function createSky(scene) {
     });
   }
 
+  // 망원경 모습: 달의 위상과 고리 기울기가 눈에 띄게 바뀌었을 때만 텍스처를 다시 그린다.
+  function updateDetails(date) {
+    const sun = bodies.find((b) => b.id === 'sun');
+    bodies.forEach((b) => {
+      const opening = computeRingOpening(b.id, date);
+      let lit = 1;
+      if (b.id === 'moon') {
+        lit = (1 - Math.cos((computeSeparation(b, sun) * Math.PI) / 180)) / 2;
+        // 달에서 태양 쪽을 가리키는 하늘 위 방향: 화면에서 밝은 쪽을 돌릴 때 쓴다.
+        const m = toSkyVector(b.az, b.alt, 1);
+        const s = toSkyVector(sun.az, sun.alt, 1);
+        b.sunward = s.sub(m.clone().multiplyScalar(m.dot(s))).normalize();
+      }
+      if (!b.detailState || Math.abs(b.detailState.opening - opening) > 0.5 || Math.abs(b.detailState.lit - lit) > 0.01) {
+        if (b.detail.material.map) b.detail.material.map.dispose();
+        b.detail.material.map = createBodyTexture(b.id, { opening, lit });
+        b.detail.material.needsUpdate = true;
+        b.detailState = { opening, lit };
+      }
+      b.detail.position.copy(b.sprite.position);
+      b.detail.material.color.set(b.below ? BELOW_COLOR : '#ffffff');
+      b.detail.renderOrder = b.below ? 5 : 0;
+    });
+  }
+
   function update(date) {
     updateStars(date);
     updateConstellations(date);
     updateBodies(date);
+    updateDetails(date);
+  }
+
+  // 망원경 보기에서는 빛 점 대신 원반 그림을 보인다.
+  function setTelescopeMode(on) {
+    bodies.forEach((b) => {
+      b.sprite.visible = !on;
+      b.detail.visible = on;
+    });
+  }
+
+  // 달의 밝은 쪽이 화면에서 태양 쪽을 향하도록 돌린다(매 프레임).
+  const pA = new THREE.Vector3();
+  const pB = new THREE.Vector3();
+  function orientMoon(camera) {
+    const moon = bodies.find((b) => b.id === 'moon');
+    if (!moon.sunward || !moon.detail.visible) return;
+    pA.copy(moon.detail.position).add(group.position).project(camera);
+    pB.copy(moon.detail.position).addScaledVector(moon.sunward, 5).add(group.position).project(camera);
+    moon.detail.material.rotation = Math.atan2(pB.y - pA.y, (pB.x - pA.x) * camera.aspect);
   }
 
   // 망원경으로 시야가 좁아져도 글자는 화면에서 같은 크기로 보이게 줄인다. 천체 자체는 그대로 커진다.
@@ -172,5 +223,5 @@ export function createSky(scene) {
     labels.forEach(({ sprite, base }) => sprite.scale.set(base.x * k, base.y * k, 1));
   }
 
-  return { group, bodies, constellations, update, setLabelScale };
+  return { group, bodies, constellations, update, setLabelScale, setTelescopeMode, orientMoon };
 }
