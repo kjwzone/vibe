@@ -12,7 +12,9 @@ const CAMERA_LIFT = 0.6;
 const PITCH_MIN = -85;
 const PITCH_MAX = 85;
 const NAKED_FOV = 60;
-const TELESCOPE_FOV_MAX = 8;
+// 망원경 시야각: 들어갈 때 8°, 축소는 별자리 전체가 들어오는 50°까지, 확대는 0.8°까지
+const TELESCOPE_FOV_START = 8;
+const TELESCOPE_FOV_MAX = 50;
 const TELESCOPE_FOV_MIN = 0.8;
 const TURN_SECONDS = 0.8;
 const CLICK_SLOP = 6;
@@ -193,10 +195,14 @@ export function createControls({ camera, dom, character, scene, start = new THRE
     camera.updateProjectionMatrix();
   }
 
-  // 망원경 보기에서 시야각을 곱해 확대·축소한다(8°~0.8°). 0.8°면 행성이 달처럼 크게 보인다.
-  function zoomTelescope(factor) {
+  // 망원경 보기의 시야각을 정한다(50°~0.8°). 0.8°면 행성이 달처럼 크게 보인다.
+  function setTelescopeFov(fov) {
     if (mode !== 'telescope') return;
-    setFov(Math.min(TELESCOPE_FOV_MAX, Math.max(TELESCOPE_FOV_MIN, camera.fov * factor)));
+    setFov(Math.min(TELESCOPE_FOV_MAX, Math.max(TELESCOPE_FOV_MIN, fov)));
+  }
+
+  function zoomTelescope(factor) {
+    setTelescopeFov(camera.fov * factor);
   }
 
   dom.addEventListener('wheel', (e) => {
@@ -208,6 +214,7 @@ export function createControls({ camera, dom, character, scene, start = new THRE
   return {
     update,
     zoomTelescope,
+    setTelescopeFov,
     get mode() { return mode; },
     get position() { return pos; },
     // 망원경 보기는 어디서든 고를 수 있고, 시점은 관측소 망원경 자리로 옮겨 간다.
@@ -215,7 +222,7 @@ export function createControls({ camera, dom, character, scene, start = new THRE
       mode = 'telescope';
       pressed.clear();
       walkTarget = null;
-      setFov(TELESCOPE_FOV_MAX);
+      setFov(TELESCOPE_FOV_START);
     },
     exitTelescope() {
       mode = 'walk';
