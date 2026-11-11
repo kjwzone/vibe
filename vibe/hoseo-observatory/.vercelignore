@@ -1,0 +1,7 @@
+# Vercel에 올리지 않을 파일: 명세·작업 기록·테스트는 공개하지 않는다
+SPEC.md
+RUNLOG.md
+PROMPTS.md
+checklist.md
+context-notes.md
+tests
