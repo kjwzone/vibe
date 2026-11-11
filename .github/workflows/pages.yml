@@ -26,6 +26,10 @@ jobs:
         run: |
           mkdir -p _site/counter
           cp vibe/counter/index.html _site/counter/index.html
+      - name: 우면산 호서 천문대의 실행 파일과 출처만 배포 폴더로 복사
+        run: |
+          mkdir -p _site/hoseo-observatory
+          cp -r vibe/hoseo-observatory/{index.html,style.css,js,vendor,sounds,CREDITS.md} _site/hoseo-observatory/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
