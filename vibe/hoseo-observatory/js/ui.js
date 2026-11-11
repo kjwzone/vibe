@@ -141,7 +141,7 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
   bar.append(
     createButton('천체', () => toggle('body')),
     createButton('별자리', () => toggle('constellation')),
-    createButton('이름', () => toggle('name')),
+    createButton('캐릭터고르기', () => toggle('name')),
     greetButton,
     soundButton,
     createButton('인트로 다시 보기', () => {
