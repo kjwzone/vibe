@@ -57,7 +57,7 @@
 1. ~~**Vercel 자동 배포 연결**~~ 완료(2026-11-12)
    - 사용자가 대시보드에서 `kjwzone/vibe`를 연결했다. 연결 여부는 `get_git_deployment_context`의 linkedProjects로 본다(`get_project`에는 `link`가 나오지 않는다).
    - `6230262` push 직후 자동 배포 `dpl_5EzCkEkduAqJZdRn4nesV2Zy1dyz`가 생겨 READY. `hoseo-observatory.vercel.app`에서 index.html·js·CREDITS.md 200, HANDOFF·SPEC·context-notes·tests 404.
-2. **귀와 창 두 개로 해야 하는 확인**: R28·R31·R32·R43·R47·R50(소리), R45(이름을 고르면 다른 창에도 바뀌는지). 지금까지는 코드 상태값으로만 확인했다.
+2. **귀와 창 두 개로 해야 하는 확인**: R28·R31·R32·R43·R47·R50(소리)은 사용자가 직접 들어야 한다. 지금까지는 코드 상태값으로만 확인했다. R45는 2026-11-12에 로컬 탭 두 개로 확인했다(통과).
 3. **RUNLOG.md**: 빈 양식 그대로다. 작업 이력은 `context-notes.md`에 있으니, 필요하면 마지막 묶음(Z1 이후 수정들) 기준으로 채운다.
 4. **checklist.md**: P0~Z1(처음 계획)만 있다. 이후 추가 기능(R44~R57)은 체크리스트 항목이 없다.
 5. **커밋하지 않은 파일(사용자 것, 손대지 않음)**: `vibe/CLAUDE.md`의 "다음오피스 작업 규칙" 10줄, `vibe/book-notes/tests/filterNotes.test.js`, `hoseo-observatory/capture-*.png` 2개, W5~W7 실습 폴더 등.
