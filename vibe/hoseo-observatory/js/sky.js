@@ -51,32 +51,48 @@ function createStarLayer(group, texture) {
     { max: 3.5, size: 3.8 },
     { max: 4.6, size: 2.8 },
   ];
-  return bins.map((bin, k) => {
-    const stars = STARS.filter((s) => s[2] <= bin.max && (k === 0 || s[2] > bins[k - 1].max));
+  // 밝기 묶음마다 지평선 위(above)와 아래(below) 두 벌을 둔다. 아래 별은 반투명 땅보다 나중에(renderOrder 5)
+  // 회색으로 그려 땅에 덮여 사라지지 않게 한다(D11, R63). 별이 지평선을 넘나들므로 매번 두 벌에 나눠 담는다.
+  const makePoints = (count, size, color, opacity, renderOrder) => {
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(stars.length * 3), 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
     const material = new THREE.PointsMaterial({
-      size: bin.size, sizeAttenuation: false, map: texture, color: '#e8eefc',
-      transparent: true, depthWrite: false,
+      size, sizeAttenuation: false, map: texture, color, opacity, transparent: true, depthWrite: false,
     });
     const points = new THREE.Points(geometry, material);
+    points.renderOrder = renderOrder;
     group.add(points);
-    return { stars, points };
+    return points;
+  };
+  return bins.map((bin, k) => {
+    const stars = STARS.filter((s) => s[2] <= bin.max && (k === 0 || s[2] > bins[k - 1].max));
+    return {
+      stars,
+      above: makePoints(stars.length, bin.size, '#e8eefc', 1, 0),
+      below: makePoints(stars.length, bin.size, BELOW_COLOR, 0.8, 5),
+    };
   });
 }
 
 function createConstellations(group) {
-  return CONSTELLATIONS.map((c) => {
+  // 별자리 선도 지평선 위·아래 두 벌. 선분 가운데가 지평선 아래면 아래 벌에 담아 땅 위에 회색으로 그린다.
+  const makeLines = (count, color, opacity, renderOrder) => {
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(c.lines.length * 6), 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 6), 3));
     const lines = new THREE.LineSegments(
       geometry,
-      new THREE.LineBasicMaterial({ color: '#6f8cc9', transparent: true, opacity: 0.5, depthWrite: false }),
+      new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false }),
     );
+    lines.renderOrder = renderOrder;
+    return lines;
+  };
+  return CONSTELLATIONS.map((c) => {
+    const lines = makeLines(c.lines.length, '#6f8cc9', 0.5, 0);
+    const linesBelow = makeLines(c.lines.length, BELOW_COLOR, 0.45, 5);
     const label = createTextSprite(c.name, { height: 13 });
     label.material.color.set('#8ea3cf');
     label.material.opacity = 0.75;
-    group.add(lines, label);
+    group.add(lines, linesBelow, label);
     // 별자리 가운데의 적경(J2000, 도): 자오선 순 정렬에 쓴다. 별들의 방향을 평균해 구한다.
     const sum = c.stars.reduce((acc, [ra, dec]) => {
       const r = ra * RAD;
@@ -84,7 +100,7 @@ function createConstellations(group) {
       return acc.add(new THREE.Vector3(Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)));
     }, new THREE.Vector3());
     const ra = ((Math.atan2(sum.y, sum.x) / RAD) + 360) % 360;
-    return { name: c.name, abbr: c.abbr, ra, data: c, lines, label, az: 0, alt: 0 };
+    return { name: c.name, abbr: c.abbr, ra, data: c, lines, linesBelow, label, az: 0, alt: 0 };
   });
 }
 
@@ -120,13 +136,23 @@ export function createSky(scene) {
   const tmp = new THREE.Vector3();
 
   function updateStars(date) {
-    starLayers.forEach(({ stars, points }) => {
-      const arr = points.geometry.attributes.position.array;
-      stars.forEach((s, i) => {
+    starLayers.forEach(({ stars, above, below }) => {
+      const up = above.geometry.attributes.position;
+      const down = below.geometry.attributes.position;
+      let nUp = 0;
+      let nDown = 0;
+      stars.forEach((s) => {
         const p = computeStarPosition(s[0], s[1], date);
-        toSkyVector(p.az, p.alt, SKY_RADIUS, tmp).toArray(arr, i * 3);
+        toSkyVector(p.az, p.alt, SKY_RADIUS, tmp);
+        if (p.alt >= 0) tmp.toArray(up.array, 3 * nUp++);
+        else tmp.toArray(down.array, 3 * nDown++);
       });
-      points.geometry.attributes.position.needsUpdate = true;
+      above.geometry.setDrawRange(0, nUp);
+      below.geometry.setDrawRange(0, nDown);
+      up.needsUpdate = true;
+      down.needsUpdate = true;
+      above.geometry.computeBoundingSphere();
+      below.geometry.computeBoundingSphere();
     });
   }
 
@@ -136,19 +162,34 @@ export function createSky(scene) {
         const p = computeStarPosition(s[0], s[1], date);
         return toSkyVector(p.az, p.alt, SKY_RADIUS * 0.995);
       });
-      const arr = c.lines.geometry.attributes.position.array;
-      c.data.lines.forEach(([a, b], i) => {
+      // 선분 가운데의 높이(y)로 지평선 위·아래 벌에 나눠 담는다.
+      const up = c.lines.geometry.attributes.position;
+      const down = c.linesBelow.geometry.attributes.position;
+      let nUp = 0;
+      let nDown = 0;
+      c.data.lines.forEach(([a, b]) => {
+        const isBelow = vecs[a].y + vecs[b].y < 0;
+        const arr = isBelow ? down.array : up.array;
+        const i = isBelow ? nDown++ : nUp++;
         vecs[a].toArray(arr, i * 6);
         vecs[b].toArray(arr, i * 6 + 3);
       });
-      c.lines.geometry.attributes.position.needsUpdate = true;
+      c.lines.geometry.setDrawRange(0, nUp * 2);
+      c.linesBelow.geometry.setDrawRange(0, nDown * 2);
+      up.needsUpdate = true;
+      down.needsUpdate = true;
       c.lines.geometry.computeBoundingSphere();
+      c.linesBelow.geometry.computeBoundingSphere();
       const center = vecs.reduce((acc, v) => acc.add(v), new THREE.Vector3()).normalize();
       c.alt = Math.asin(center.y) / RAD;
       c.az = ((Math.atan2(center.x, -center.z) / RAD) + 360) % 360;
       // 가운데에서 가장 먼 별까지의 각거리(도): 망원경에서 별자리 전체가 들어오게 시야를 맞출 때 쓴다.
       c.radius = Math.max(...vecs.map((v) => Math.acos(Math.min(1, v.clone().normalize().dot(center))) / RAD));
       c.label.position.copy(center.multiplyScalar(SKY_RADIUS * 0.99));
+      // 이름표도 지평선 아래면 땅 위에 회색으로 그린다.
+      const below = c.alt < 0;
+      c.label.material.color.set(below ? BELOW_COLOR : '#8ea3cf');
+      c.label.renderOrder = below ? 5 : 0;
     });
   }
 
