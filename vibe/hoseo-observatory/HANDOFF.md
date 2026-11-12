@@ -1,6 +1,6 @@
 # HANDOFF — 우면산 호서 천문대
 
-다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R57)은 `SPEC.md`에 있다.
+다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R60)은 `SPEC.md`에 있다.
 
 작성: 2026-11-12
 
@@ -14,7 +14,7 @@
 | 마지막 앱 커밋 | `0cbbf62` 천문대 SPEC과 작업 기록에 망원경 시야·별자리 정렬·이름 순서 반영 (이 HANDOFF 커밋은 그 뒤) |
 | 배포 확인 (2026-11-12) | 두 주소 모두 `0cbbf62` 코드가 올라가 있음. `index.html`·`js/constellation-order.js` 200, 새 이름 순서 반영, `SPEC.md` 404(의도대로 비공개) |
 | Vercel 프로젝트 | 팀 `kjwzone71-1940's projects`(team_fhohDdlKVNzPP2OBrFbR9UCv), 프로젝트 `hoseo-observatory`(prj_tn0on5U2XuoCiCXa336HtOxYBtgG), 최신 배포 dpl_DJXPLQEiKtiJiHRWvVqkJJ2FhGAq (READY) |
-| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 33개 통과, 0개 실패 |
+| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 40개 통과, 0개 실패 |
 
 ### 실행과 확인
 - 로컬: `python -m http.server 8765 --directory hoseo-observatory` (vibe 폴더에서). `vibe/.claude/launch.json`의 `observatory` 설정과 같다. ES 모듈이라 `file://`로 열면 안 된다.
@@ -23,11 +23,12 @@
 ### 주요 파일
 | 파일 | 역할 |
 |---|---|
-| `js/main.js` | 시작점. 인트로→천문대 전환, 함께 있기(이름·위치·인사), 소리, 망원경·사진 연결 |
+| `js/main.js` | 시작점. 인트로→천문대 전환(입장 조망과 사람 수), 함께 있기(이름·위치·인사), 소리, 망원경·사진 연결 |
+| `js/overview.js` | 입장 때 광장을 4초 내려다보는 CCTV 조망 카메라 위치(순수 함수, 테스트 있음) |
 | `js/intro.js` | 태양계→지구→대한민국→서울→서초구→우면산→천문대 인트로(약 35초) |
 | `js/world.js`, `js/character.js`, `js/controls.js` | 산·관측소·망원경, 과학자 캐릭터, 걷기·클릭 이동·시점·망원경 확대 |
 | `js/sky.js`, `js/astro.js` | 천구(별·별자리·천체), 천체 위치·고리 기울기·항성시 계산 |
-| `js/planet-art.js`, `js/photo.js`, `js/data/photos.js` | 망원경 속 천체 원반 그림, 최대 확대 시 JWST·허블 사진 |
+| `js/planet-art.js`, `js/photo.js`, `js/data/photos.js` | 망원경 속 천체 원반 그림, 최대 확대 시 사진(JWST·허블, 태양·달·수성·금성은 NASA 탐사선) |
 | `js/ui.js`, `js/constellation-order.js`, `js/names.js` | 버튼·목록·카드, 별자리 정렬 3가지, 이름 목록(지명도 순) |
 | `js/net.js` | Trystero(Nostr)로 한 방 접속 |
 | `js/sound.js` | 도로 백색 소음 + 무작위 부엉이 |
