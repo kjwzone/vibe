@@ -187,7 +187,28 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
   hint.textContent = '클릭하면 소리가 납니다';
   hint.hidden = true;
 
+  // 도움말: 처음 온 사람이 바로 쓸 수 있게 조작법을 짧게 보여 준다(R62).
+  const help = document.createElement('section');
+  help.className = 'ui-help';
+  help.hidden = true;
+  help.setAttribute('aria-label', '사용 설명');
+  help.innerHTML = `
+    <h2>사용 설명</h2>
+    <dl>
+      <dt>둘러보기</dt><dd>화면을 마우스나 손가락으로 끌면 고개를 돌립니다.</dd>
+      <dt>걷기</dt><dd>땅을 짧게 누르면 그 자리로 걸어갑니다. PC에서는 W·A·S·D나 방향키로도 걷습니다.</dd>
+      <dt>천체·별자리</dt><dd>목록에서 고르면 그쪽으로 시선이 갑니다. 지평선 아래에 있는 것은 회색으로 보입니다. 별자리 목록은 위의 버튼으로 순서를 바꿉니다.</dd>
+      <dt>망원경</dt><dd>"망원경으로 보기"를 누르고 +·− 버튼이나 마우스 휠로 확대합니다. 끝까지 확대하면 실제 우주 사진이 뜹니다. "눈으로 보기"로 돌아옵니다.</dd>
+      <dt>함께 보기</dt><dd>같은 주소로 들어온 사람이 과학자 캐릭터로 보입니다. "캐릭터고르기"로 이름을 바꾸고, "인사"(G 키)로 고개 숙여 인사합니다.</dd>
+      <dt>소리</dt><dd>화면을 한 번 누르면 부엉이와 먼 도로 소리가 납니다. "소리 끄기"로 끕니다.</dd>
+      <dt>인트로</dt><dd>"인트로 다시 보기"로 태양계부터 천문대까지 다시 봅니다.</dd>
+    </dl>`;
+  const helpClose = createButton('×', () => { help.hidden = true; }, 'ui-card-close');
+  helpClose.setAttribute('aria-label', '사용 설명 닫기');
+  help.append(helpClose);
+
   bar.append(
+    createButton('도움말', () => { help.hidden = !help.hidden; }),
     createButton('천체', () => toggle('body')),
     createButton('별자리', () => toggle('constellation')),
     createButton('캐릭터고르기', () => toggle('name')),
@@ -203,7 +224,7 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
   const dock = document.createElement('div');
   dock.className = 'ui-dock';
   dock.append(panel, viewGroup, bar);
-  document.body.append(hint, card, dock);
+  document.body.append(hint, card, help, dock);
 
   // 인트로를 다시 보는 동안 천문대 화면의 UI를 모두 숨긴다.
   function setVisible(visible) {
