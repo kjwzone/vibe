@@ -16,7 +16,8 @@ html, body {
   font-family: "Noto Sans KR", system-ui, sans-serif;
 }
 
-canvas { display: block; }
+/* 손가락 끌기를 브라우저 스크롤·확대로 넘기지 않아야 모바일에서 시점이 끊기지 않는다(R58). */
+canvas { display: block; touch-action: none; }
 
 button { font: inherit; color: inherit; }
 
