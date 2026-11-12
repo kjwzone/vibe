@@ -48,8 +48,8 @@ export function createPhotoViewer() {
     if (!cache.has(id)) cache.set(id, await loadCropped(p));
     if (current !== id) return;
     img.src = cache.get(id);
-    img.alt = `${p.telescope}가 찍은 ${p.title}`;
-    caption.innerHTML = `${p.telescope} · ${p.title}<br>사진: ${p.credit} · <a href="${p.page}" target="_blank" rel="noopener">CC BY 4.0</a>`;
+    img.alt = `${p.telescope} 사진: ${p.title}`;
+    caption.innerHTML = `${p.telescope} · ${p.title}<br>사진: ${p.credit} · <a href="${p.page}" target="_blank" rel="noopener">${p.license || 'CC BY 4.0'}</a>`;
     box.classList.add('is-visible');
   }
 

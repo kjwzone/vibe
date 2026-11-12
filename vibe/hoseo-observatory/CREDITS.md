@@ -14,7 +14,7 @@
 - 서초구 경계: Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. 데이터 원 출처 citypopulation.de. CC BY 3.0에 따라 출처를 밝힌다.
 - 점 수를 줄이고(가까운 점 건너뛰기) 좌표를 반올림했다. 경계 자체는 바꾸지 않았다.
 
-## 우주 망원경 사진 (`images/`, 망원경 최대 확대에서 표시)
+## 우주 망원경·탐사선 사진 (`images/`, 망원경 최대 확대에서 표시)
 
 ESA/Webb과 ESA/Hubble 사진은 CC BY 4.0이다(https://esawebb.org/copyright/, https://esahubble.org/copyright/). 화면에 사진을 띄울 때 아래 출처를 함께 보여 준다. 사이트에서 제공하는 화면 크기(Screensize) JPEG을 그대로 쓰고, 목성 사진만 흰 테두리를 잘라 보인다.
 
@@ -25,6 +25,17 @@ ESA/Webb과 ESA/Hubble 사진은 CC BY 4.0이다(https://esawebb.org/copyright/,
 | images/jwst/uranus.jpg | Uranus close-up view (NIRCam) | 제임스 웹 | NASA, ESA, CSA, STScI | https://esawebb.org/images/weic2332a/ | 2026-11-12 |
 | images/jwst/neptune.jpg | Neptune (NIRCam Image) | 제임스 웹 | NASA, ESA, CSA, and STScI | https://esawebb.org/images/weic2214c/ | 2026-11-12 |
 | images/hubble/mars.jpg | Mars in opposition 2016 | 허블 | NASA, ESA, the Hubble Heritage Team (STScI/AURA), J. Bell (ASU), and M. Wolff (Space Science Institute) | https://esahubble.org/images/heic1609a/ | 2026-11-12 |
+
+### NASA 탐사선·위성 사진 (`images/nasa/`)
+
+태양·달·수성·금성은 NASA가 만든 사진이라 미국에서 공공 영역이다(Wikimedia Commons 각 파일 페이지의 "PD-USGov-NASA" 표시). 공공 영역이지만 출처를 화면(사진 아래)과 이 표에 함께 적는다. Wikimedia Commons의 960px 축소본을 그대로 쓴다. 태양 사진은 SDO 공식 사이트의 1024px 주소가 404여서 같은 사진의 Commons 축소본을 받았다. 달 사진 왼쪽 아래의 작은 글씨는 원본에 들어 있는 LROC 표기다.
+
+| 파일 | 사진 | 탐사선·위성 | 출처 표기 | 페이지 | 받은 날짜 |
+|---|---|---|---|---|---|
+| images/nasa/sun.jpg | The Sun by AIA (30.4nm), 2010-08-19 | SDO | NASA/SDO (AIA) | https://commons.wikimedia.org/wiki/File:The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg | 2026-11-12 |
+| images/nasa/moon.jpg | Moon nearside (LROC WAC mosaic) | LRO | NASA/GSFC/Arizona State University | https://commons.wikimedia.org/wiki/File:Moon_nearside_LRO.jpg | 2026-11-12 |
+| images/nasa/mercury.jpg | Mercury in color (PIA10398) | MESSENGER | NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington | https://commons.wikimedia.org/wiki/File:Mercury_in_color_-_Prockter07-edit1.jpg | 2026-11-12 |
+| images/nasa/venus.jpg | Venus newly processed view (PIA23791) | Mariner 10 | NASA/JPL-Caltech | https://commons.wikimedia.org/wiki/File:PIA23791-Venus-NewlyProcessedView-20200608.jpg | 2026-11-12 |
 
 - 망원경 보기의 천체 원반 그림(`js/planet-art.js`)은 사진을 쓰지 않고 코드로 그렸다.
 
