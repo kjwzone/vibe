@@ -54,9 +54,9 @@
 
 ## 3. 남은 작업
 
-1. **Vercel 자동 배포 연결**
-   - 2026-11-12 사용자가 대시보드에서 `kjwzone/vibe`를 연결했다. `get_project`에는 `link`가 나오지 않고, `get_git_deployment_context`의 linkedProjects에 `hoseo-observatory → github kjwzone/vibe`로 나온다.
-   - 남은 확인: 다음 push에 새 배포가 저절로 생기고 READY가 되는지(Root Directory `vibe/hoseo-observatory` 설정이 맞는지도 이것으로 확인된다). `list_deployments`로 본다.
+1. ~~**Vercel 자동 배포 연결**~~ 완료(2026-11-12)
+   - 사용자가 대시보드에서 `kjwzone/vibe`를 연결했다. 연결 여부는 `get_git_deployment_context`의 linkedProjects로 본다(`get_project`에는 `link`가 나오지 않는다).
+   - `6230262` push 직후 자동 배포 `dpl_5EzCkEkduAqJZdRn4nesV2Zy1dyz`가 생겨 READY. `hoseo-observatory.vercel.app`에서 index.html·js·CREDITS.md 200, HANDOFF·SPEC·context-notes·tests 404.
 2. **귀와 창 두 개로 해야 하는 확인**: R28·R31·R32·R43·R47·R50(소리), R45(이름을 고르면 다른 창에도 바뀌는지). 지금까지는 코드 상태값으로만 확인했다.
 3. **RUNLOG.md**: 빈 양식 그대로다. 작업 이력은 `context-notes.md`에 있으니, 필요하면 마지막 묶음(Z1 이후 수정들) 기준으로 채운다.
 4. **checklist.md**: P0~Z1(처음 계획)만 있다. 이후 추가 기능(R44~R57)은 체크리스트 항목이 없다.
@@ -65,7 +65,7 @@
 ## 4. 주의할 점
 
 - **Vercel CLI 미로그인**: `vercel whoami`가 로그인 대기로 멈춘다. CLI로 배포하지 말고, Vercel MCP `create_deployment`에 `gitSource {type: github, org: kjwzone, repo: vibe, ref: main, sha: <커밋>}`, `project: hoseo-observatory`, `target: production`을 넣어 배포한다. 파일을 직접 담아 보내기에는 크다(약 4.5MB).
-- **Vercel 자동 배포**: Git 연결은 끝났다. 첫 자동 배포가 확인되기 전까지는 push 뒤 `list_deployments`로 새 배포가 생겼는지 본다(위 남은 작업 1). GitHub Pages는 push하면 자동 배포된다.
+- **Vercel 자동 배포**: push하면 Vercel도 GitHub Pages도 자동 배포된다. Vercel MCP `create_deployment`로 따로 배포할 필요가 없다. push 뒤 `list_deployments`로 새 배포가 READY인지 본다.
 - **`.vercelignore`**: SPEC·RUNLOG·PROMPTS·checklist·context-notes·HANDOFF·tests를 Vercel에 올리지 않는다. 공개하면 안 되는 문서를 새로 만들면 여기에 더한다.
 - **GitHub Pages 복사 목록**: `.github/workflows/pages.yml`이 `vibe/hoseo-observatory/{index.html,style.css,js,vendor,sounds,images,CREDITS.md}`만 복사한다. 앱이 쓰는 최상위 폴더를 새로 만들면 이 목록에 더해야 공개 사이트에서 보인다.
 - **push 범위**: 로컬 `main`을 push하면 다른 실습 폴더의 커밋도 같이 공개 저장소에 올라간다. push 전에 `git rev-list origin/main..main`으로 확인한다.
