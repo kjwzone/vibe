@@ -36,6 +36,23 @@ button { font: inherit; color: inherit; }
 }
 .intro-caption.is-visible { opacity: 0.9; }
 
+/* 입장 조망(CCTV) 동안 왼쪽 위에 보이는 사람 수 */
+.overview-count {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.overview-count.is-visible { opacity: 0.95; }
+
 .intro-fade {
   position: fixed;
   inset: 0;

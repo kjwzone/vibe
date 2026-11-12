@@ -234,13 +234,32 @@ function updatePhoto() {
   photoViewer.show(hit ? hit.id : null);
 }
 
-// 인트로가 끝나면 천문대 화면으로 들어온다. UI는 처음 한 번만 만들고, 다시 볼 때는 보이게만 한다.
+// 입장 조망(CCTV) 동안 왼쪽 위에 지금 천문대에 있는 사람 수를 보인다(R60).
+const overviewCount = document.createElement('div');
+overviewCount.className = 'overview-count';
+document.body.append(overviewCount);
+let overviewShown = false;
+
+function updateOverviewCount() {
+  if (!overviewShown) return;
+  if (controls.isOverview) {
+    overviewCount.textContent = `지금 ${peers.size + 1}명이 천문대에 있어요`;
+    return;
+  }
+  // 조망이 끝나 내 캐릭터 뒤로 내려오면 글자를 감추고 버튼을 보인다.
+  overviewShown = false;
+  overviewCount.classList.remove('is-visible');
+  ui.setVisible(true);
+}
+
+// 인트로가 끝나면 천문대 화면으로 들어온다. UI는 처음 한 번만 만들고, 조망이 끝나면 보이게 한다.
 function startObservatory() {
   mode = 'observatory';
   sound.setSuspended(false);
-  if (ui) {
-    ui.setVisible(true);
-  } else {
+  controls.startOverview();
+  overviewShown = true;
+  overviewCount.classList.add('is-visible');
+  if (!ui) {
     ui = createUi({
       sky,
       onPick: pickTarget,
@@ -257,6 +276,7 @@ function startObservatory() {
       onReplayIntro: replayIntro,
     });
   }
+  ui.setVisible(false);
   startSoundIfReady();
 }
 
@@ -294,6 +314,7 @@ function renderFrame(timestamp) {
     target = intro.update(dt, camera.aspect) || target;
   } else {
     controls.update(dt);
+    updateOverviewCount();
     ui.setViewState({ mode: controls.mode });
     sky.setLabelScale(Math.tan((camera.fov * Math.PI) / 360) / Math.tan(Math.PI / 6));
     if (controls.mode === 'telescope') sky.orientMoon(camera);

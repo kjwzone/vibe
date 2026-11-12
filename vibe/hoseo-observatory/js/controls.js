@@ -2,6 +2,7 @@
 import * as THREE from '../vendor/three.module.min.js';
 import { toSkyVector } from './sky.js';
 import { OBSERVATORY, TELESCOPE_POSITION } from './world.js';
+import { computeOverviewPose, OVERVIEW_HOLD, OVERVIEW_END } from './overview.js';
 
 const WALK_SPEED = 2.2;
 const PLAZA_RADIUS = 28;
@@ -52,6 +53,8 @@ export function createControls({ camera, dom, character, scene, start = new THRE
   let turn = null;
   let drag = null;
   let walkTarget = null;
+  // 입장 조망(CCTV) 중이면 { t: 지난 초 }. 조망 동안에는 걷기와 시점 돌리기를 받지 않는다.
+  let overview = null;
   const dir = new THREE.Vector3();
   const head = new THREE.Vector3();
   const raycaster = new THREE.Raycaster();
@@ -82,7 +85,16 @@ export function createControls({ camera, dom, character, scene, start = new THRE
     marker.material.opacity = 0.9;
   }
 
+  // 조망 중 클릭이나 키를 누르면 기다리지 않고 바로 내 캐릭터 뒤로 내려온다.
+  function skipOverview() {
+    if (overview && overview.t < OVERVIEW_HOLD) overview.t = OVERVIEW_HOLD;
+  }
+
   window.addEventListener('keydown', (e) => {
+    if (overview) {
+      skipOverview();
+      return;
+    }
     if (KEYS[e.code]) {
       pressed.add(KEYS[e.code]);
       if (e.code.startsWith('Arrow')) e.preventDefault();
@@ -93,7 +105,11 @@ export function createControls({ camera, dom, character, scene, start = new THRE
 
   // 짧게 누르면 그 자리로 걷고, CLICK_SLOP 픽셀 넘게 끌면 시점을 돌린다.
   dom.addEventListener('pointerdown', (e) => {
-    drag = { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
+    if (overview) {
+      skipOverview();
+      return;
+    }
+    drag ={ x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
     dom.setPointerCapture(e.pointerId);
   });
   dom.addEventListener('pointermove', (e) => {
@@ -183,12 +199,23 @@ export function createControls({ camera, dom, character, scene, start = new THRE
     camera.lookAt(head.copy(camera.position).add(dir));
   }
 
+  // 평소 3인칭 카메라 자리를 먼저 구하고, 그 자리를 끝점으로 삼아 조망 카메라를 놓는다.
+  function placeOverviewCamera(dt) {
+    overview.t += dt;
+    const end = { position: camera.position.clone(), look: camera.position.clone().add(dir) };
+    const p = computeOverviewPose(overview.t, end);
+    camera.position.set(p.position.x, p.position.y, p.position.z);
+    camera.lookAt(p.look.x, p.look.y, p.look.z);
+    if (overview.t >= OVERVIEW_END) overview = null;
+  }
+
   function update(dt) {
-    if (mode === 'walk') walk(dt);
+    if (mode === 'walk' && !overview) walk(dt);
     fadeMarker(dt);
     updateTurn(dt);
     character.root.position.copy(pos);
     placeCamera();
+    if (overview) placeOverviewCamera(dt);
   }
 
   function setFov(fov) {
@@ -217,6 +244,14 @@ export function createControls({ camera, dom, character, scene, start = new THRE
     zoomTelescope,
     setTelescopeFov,
     get mode() { return mode; },
+    get isOverview() { return Boolean(overview); },
+    // 천문대에 들어올 때 광장을 높은 곳에서 4초 보여 준 뒤 내 캐릭터 뒤로 내려온다(R60).
+    startOverview() {
+      overview = { t: 0 };
+      pressed.clear();
+      walkTarget = null;
+      drag = null;
+    },
     get position() { return pos; },
     // 망원경 보기는 어디서든 고를 수 있고, 시점은 관측소 망원경 자리로 옮겨 간다.
     enterTelescope() {

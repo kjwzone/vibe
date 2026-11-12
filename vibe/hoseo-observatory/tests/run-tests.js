@@ -4,6 +4,7 @@ import { POLARIS } from '../js/data/stars.js';
 import { NAMES, pickName, shouldYieldName } from '../js/names.js';
 import { sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac, ZODIAC_ORDER } from '../js/constellation-order.js';
 import { CONSTELLATIONS } from '../js/data/stars.js';
+import { computeOverviewPose, OVERVIEW_HOLD, OVERVIEW_END } from '../js/overview.js';
 
 let passed = 0;
 let failed = 0;
@@ -113,6 +114,23 @@ function testConstellationOrder() {
   checkEqual('zodiac_startsWithAries', groups[1].items.map((c) => c.abbr).join(','), ZODIAC_ORDER.join(','));
 }
 
+// 입장 조망: 4초 동안 높은 곳에 머물며 돌고, 5.5초에 평소 카메라 자리에 정확히 닿는다.
+function testOverviewPose() {
+  const end = { position: { x: 1, y: 2.2, z: 6.5 }, look: { x: 1, y: 2.8, z: 5.7 } };
+  const start = computeOverviewPose(0, end);
+  checkNear('overview_startHigh', start.position.y, 12, 0.001);
+  checkNear('overview_startDistance', Math.hypot(start.position.x, start.position.z), 18, 0.001);
+  const hold = computeOverviewPose(OVERVIEW_HOLD, end);
+  checkNear('overview_stillHighAtHoldEnd', hold.position.y, 12, 0.001);
+  checkEqual('overview_turnsDuringHold', start.position.x < 0 && hold.position.x > 0, true);
+  const mid = computeOverviewPose((OVERVIEW_HOLD + OVERVIEW_END) / 2, end);
+  checkEqual('overview_descendingMidway', mid.position.y < 12 && mid.position.y > end.position.y, true);
+  const done = computeOverviewPose(OVERVIEW_END, end);
+  checkNear('overview_endsAtCamera', Math.hypot(done.position.x - 1, done.position.y - 2.2, done.position.z - 6.5), 0, 1e-9);
+  checkNear('overview_endsLookingAtSky', done.look.y, 2.8, 1e-9);
+}
+
+testOverviewPose();
 testConstellationOrder();
 testRingOpening();
 testSeparation();
