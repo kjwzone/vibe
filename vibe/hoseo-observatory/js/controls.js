@@ -7,11 +7,12 @@ const WALK_SPEED = 2.2;
 const PLAZA_RADIUS = 28;
 const BODY_RADIUS = 0.3;
 const EYE_HEIGHT = 1.6;
-const CAMERA_DISTANCE = 4.5;
+const CAMERA_DISTANCE = 5.5;
 const CAMERA_LIFT = 0.6;
 const PITCH_MIN = -85;
 const PITCH_MAX = 85;
-const NAKED_FOV = 60;
+// 맨눈 보기는 하늘과 광장이 넓게 보이도록 75°로 둔다(R59).
+export const NAKED_FOV = 75;
 // 망원경 시야각: 들어갈 때 8°, 축소는 별자리 전체가 들어오는 50°까지, 확대는 0.8°까지
 const TELESCOPE_FOV_START = 8;
 const TELESCOPE_FOV_MAX = 50;

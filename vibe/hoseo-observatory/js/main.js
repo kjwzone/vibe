@@ -5,7 +5,7 @@ import { createSky } from './sky.js';
 import { createIntro } from './intro.js';
 import { createUi } from './ui.js';
 import { createCharacter, CHARACTER_COLORS } from './character.js';
-import { createControls } from './controls.js';
+import { createControls, NAKED_FOV } from './controls.js';
 import { connectRoom } from './net.js';
 import { NAMES, pickName, shouldYieldName } from './names.js';
 import { createSound } from './sound.js';
@@ -21,7 +21,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.append(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 3000);
+const camera = new THREE.PerspectiveCamera(NAKED_FOV, 1, 0.1, 3000);
 const world = createWorld();
 const sky = createSky(world.scene);
 sky.update(new Date());
