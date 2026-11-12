@@ -11,6 +11,7 @@ import { NAMES, pickName, shouldYieldName } from './names.js';
 import { createSound } from './sound.js';
 import { createPhotoViewer, hasPhoto } from './photo.js';
 import { computeSeparation } from './astro.js';
+import { pickStartPosition } from './spawn.js';
 
 const SKY_UPDATE_MS = 10000;
 const POSE_SEND_MS = 200;
@@ -51,7 +52,12 @@ const me = {
 };
 const myCharacter = createCharacter({ color: me.color, name: me.name });
 world.scene.add(myCharacter.root);
-const controls = createControls({ camera, dom: renderer.domElement, character: myCharacter, scene: world.scene });
+// 처음 접속할 때 관측소 안 무작위 자리에서 시작해, 움직이지 않은 사람끼리 겹치지 않게 한다(R61).
+const startXZ = pickStartPosition();
+const controls = createControls({
+  camera, dom: renderer.domElement, character: myCharacter, scene: world.scene,
+  start: new THREE.Vector3(startXZ.x, 0, startXZ.z),
+});
 
 // 함께 있는 사람들
 const peers = new Map();

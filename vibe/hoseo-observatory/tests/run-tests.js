@@ -5,6 +5,7 @@ import { NAMES, pickName, shouldYieldName } from '../js/names.js';
 import { sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac, ZODIAC_ORDER } from '../js/constellation-order.js';
 import { CONSTELLATIONS } from '../js/data/stars.js';
 import { computeOverviewPose, OVERVIEW_HOLD, OVERVIEW_END } from '../js/overview.js';
+import { pickStartPosition, SPAWN_MAX_RADIUS, SPAWN_TELESCOPE_GAP } from '../js/spawn.js';
 
 let passed = 0;
 let failed = 0;
@@ -130,6 +131,25 @@ function testOverviewPose() {
   checkNear('overview_endsLookingAtSky', done.look.y, 2.8, 1e-9);
 }
 
+// 시작 위치: 1000번 뽑아도 모두 관측소 안, 망원경에서 떨어진 곳이고, 서로 겹치지 않게 흩어진다.
+function testStartPosition() {
+  let seed = 12345;
+  const rand = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+  const points = Array.from({ length: 1000 }, () => pickStartPosition(rand));
+  checkEqual('spawn_insideObservatory', points.every((p) => Math.hypot(p.x, p.z) <= SPAWN_MAX_RADIUS + 1e-9), true);
+  checkEqual('spawn_awayFromTelescope', points.every((p) => Math.hypot(p.x, p.z + 2.5) >= SPAWN_TELESCOPE_GAP), true);
+  const distinct = new Set(points.map((p) => `${p.x.toFixed(1)},${p.z.toFixed(1)}`)).size;
+  checkEqual('spawn_spreadOut', distinct > 500, true);
+  // 처음 뽑힌 자리가 망원경 위(반지름 2.5m, 각도 180° → (0, -2.5))면 버리고 다음 자리(가운데)를 쓴다.
+  const draws = [(2.5 / SPAWN_MAX_RADIUS) ** 2, 0.5, 0, 0];
+  const p = pickStartPosition(() => draws.shift());
+  checkNear('spawn_skipsTelescopeSpot', Math.hypot(p.x, p.z), 0, 1e-9);
+}
+
+testStartPosition();
 testOverviewPose();
 testConstellationOrder();
 testRingOpening();
