@@ -14,7 +14,7 @@ function createButton(label, onClick, className = 'ui-button') {
 }
 
 // 화면 아래 UI를 만든다. 동작은 콜백으로 넘긴다.
-export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet, onSound, getNames, onChooseName, onReplayIntro }) {
+export function createUi({ sky, onPick, onUnpick = () => {}, onTelescope, onNakedEye, onZoom, onGreet, onSound, getNames, onChooseName, onReplayIntro }) {
   const bar = document.createElement('div');
   bar.className = 'ui-bar';
   const panel = document.createElement('div');
@@ -143,6 +143,7 @@ export function createUi({ sky, onPick, onTelescope, onNakedEye, onZoom, onGreet
       ${below ? '<div class="ui-card-below">지평선 아래</div>' : ''}`;
     card.querySelector('.ui-card-close').addEventListener('click', () => {
       picked = null;
+      onUnpick();
       renderCard();
     });
   }

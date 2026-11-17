@@ -203,6 +203,8 @@ function pickTarget(pick) {
     ? sky.bodies.find((b) => b.id === pick.id)
     : sky.constellations.find((c) => c.name === pick.name);
   controls.turnTo(target.az, target.alt);
+  // 고른 별자리는 맨눈·망원경 보기 모두에서 빛나게 하고, 천체를 고르면 끈다(R68).
+  sky.setHighlight(pick.kind === 'constellation' ? pick.name : null);
   // 망원경 보기에서 별자리를 고르면 별자리 전체가 화면 안에 들어오도록 시야를 맞춘다.
   // 화면 아래 버튼 줄에 가리지 않도록 여유(1.6배)를 둔다.
   if (pick.kind === 'constellation' && controls.mode === 'telescope') {
@@ -274,6 +276,7 @@ function startObservatory() {
     ui = createUi({
       sky,
       onPick: pickTarget,
+      onUnpick: () => sky.setHighlight(null),
       onTelescope: enterTelescope,
       onNakedEye: leaveTelescope,
       onZoom: (factor) => controls.zoomTelescope(factor),
@@ -330,6 +333,7 @@ function renderFrame(timestamp) {
     ui.setViewState({ mode: controls.mode });
     sky.setLabelScale(Math.tan((camera.fov * Math.PI) / 360) / Math.tan(Math.PI / 6));
     if (controls.mode === 'telescope') sky.orientMoon(camera);
+    sky.pulseHighlight(timestamp / 1000);
     updatePhoto();
   }
   myCharacter.update(dt);

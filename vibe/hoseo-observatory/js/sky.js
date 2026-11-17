@@ -74,7 +74,13 @@ function createStarLayer(group, texture) {
   });
 }
 
-function createConstellations(group) {
+// 고른 별자리를 빛나게 할 때 쓰는 색과 빛무리 크기
+const HIGHLIGHT_COLOR = new THREE.Color('#ffd98a');
+const HIGHLIGHT_BELOW_COLOR = new THREE.Color('#c9b07a');
+const HALO_SIZE = 18;
+const HIGHLIGHT_PERIOD_S = 3;
+
+function createConstellations(group, haloTexture) {
   // 별자리 선도 지평선 위·아래 두 벌. 선분 가운데가 지평선 아래면 아래 벌에 담아 땅 위에 회색으로 그린다.
   const makeLines = (count, color, opacity, renderOrder) => {
     const geometry = new THREE.BufferGeometry();
@@ -93,6 +99,16 @@ function createConstellations(group) {
     label.material.color.set('#8ea3cf');
     label.material.opacity = 0.75;
     group.add(lines, linesBelow, label);
+    // 고른 별자리의 별마다 두는 빛무리(평소에는 숨김)
+    const halos = c.stars.map(() => {
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: haloTexture, color: HIGHLIGHT_COLOR, transparent: true, opacity: 0, depthWrite: false,
+      }));
+      halo.scale.set(HALO_SIZE, HALO_SIZE, 1);
+      halo.visible = false;
+      group.add(halo);
+      return halo;
+    });
     // 별자리 가운데의 적경(J2000, 도): 자오선 순 정렬에 쓴다. 별들의 방향을 평균해 구한다.
     const sum = c.stars.reduce((acc, [ra, dec]) => {
       const r = ra * RAD;
@@ -100,7 +116,7 @@ function createConstellations(group) {
       return acc.add(new THREE.Vector3(Math.cos(d) * Math.cos(r), Math.cos(d) * Math.sin(r), Math.sin(d)));
     }, new THREE.Vector3());
     const ra = ((Math.atan2(sum.y, sum.x) / RAD) + 360) % 360;
-    return { name: c.name, abbr: c.abbr, ra, data: c, lines, linesBelow, label, az: 0, alt: 0 };
+    return { name: c.name, abbr: c.abbr, ra, data: c, lines, linesBelow, label, halos, az: 0, alt: 0 };
   });
 }
 
@@ -131,7 +147,8 @@ export function createSky(scene) {
   const starTexture = createGlowTexture(0.2);
   createCompass(group);
   const starLayers = createStarLayer(group, starTexture);
-  const constellations = createConstellations(group);
+  const constellations = createConstellations(group, starTexture);
+  let highlighted = null;
   const bodies = createBodies(group);
   const tmp = new THREE.Vector3();
 
@@ -186,10 +203,14 @@ export function createSky(scene) {
       // 가운데에서 가장 먼 별까지의 각거리(도): 망원경에서 별자리 전체가 들어오게 시야를 맞출 때 쓴다.
       c.radius = Math.max(...vecs.map((v) => Math.acos(Math.min(1, v.clone().normalize().dot(center))) / RAD));
       c.label.position.copy(center.multiplyScalar(SKY_RADIUS * 0.99));
-      // 이름표도 지평선 아래면 땅 위에 회색으로 그린다.
+      // 이름표도 지평선 아래면 땅 위에 회색으로 그린다(빛나는 별자리는 pulseHighlight가 색을 정한다).
       const below = c.alt < 0;
-      c.label.material.color.set(below ? BELOW_COLOR : '#8ea3cf');
+      if (c !== highlighted) c.label.material.color.set(below ? BELOW_COLOR : '#8ea3cf');
       c.label.renderOrder = below ? 5 : 0;
+      c.halos.forEach((halo, i) => {
+        halo.position.copy(vecs[i]).multiplyScalar(0.998);
+        halo.renderOrder = vecs[i].y < 0 ? 5 : 0;
+      });
     });
   }
 
@@ -269,9 +290,53 @@ export function createSky(scene) {
       labels.push({ sprite: o, base: o.scale.clone() });
     }
   });
+  let haloScale = 1;
   function setLabelScale(k) {
     labels.forEach(({ sprite, base }) => sprite.scale.set(base.x * k, base.y * k, 1));
+    // 빛무리도 망원경으로 확대해도 화면에서 같은 크기로 보이게 줄인다.
+    haloScale = k;
+    if (highlighted) highlighted.halos.forEach((h) => h.scale.set(HALO_SIZE * k, HALO_SIZE * k, 1));
   }
 
-  return { group, bodies, constellations, update, setLabelScale, setTelescopeMode, orientMoon };
+  // 고른 별자리를 빛나게 한다(이름이 없으면 끈다). 끌 때는 선·이름표를 원래 색으로 되돌린다.
+  function setHighlight(name) {
+    const next = constellations.find((c) => c.name === name) || null;
+    if (next === highlighted) return;
+    if (highlighted) {
+      const c = highlighted;
+      c.lines.material.color.set('#6f8cc9');
+      c.lines.material.opacity = 0.5;
+      c.linesBelow.material.color.set(BELOW_COLOR);
+      c.linesBelow.material.opacity = 0.45;
+      c.label.material.color.set(c.alt < 0 ? BELOW_COLOR : '#8ea3cf');
+      c.label.material.opacity = 0.75;
+      c.halos.forEach((h) => { h.visible = false; });
+    }
+    highlighted = next;
+    if (highlighted) highlighted.halos.forEach((h) => {
+      h.visible = true;
+      h.scale.set(HALO_SIZE * haloScale, HALO_SIZE * haloScale, 1);
+    });
+  }
+
+  // 빛나는 별자리를 숨쉬듯 천천히(3초 주기) 밝아졌다 어두워지게 한다. 지평선 아래면 조금 더 어둡게.
+  function pulseHighlight(seconds) {
+    if (!highlighted) return;
+    const c = highlighted;
+    const k = 0.5 + 0.5 * Math.sin((seconds * 2 * Math.PI) / HIGHLIGHT_PERIOD_S);
+    c.lines.material.color.copy(HIGHLIGHT_COLOR);
+    c.lines.material.opacity = 0.75 + 0.25 * k;
+    c.linesBelow.material.color.copy(HIGHLIGHT_BELOW_COLOR);
+    c.linesBelow.material.opacity = 0.55 + 0.25 * k;
+    const below = c.alt < 0;
+    c.label.material.color.copy(below ? HIGHLIGHT_BELOW_COLOR : HIGHLIGHT_COLOR);
+    c.label.material.opacity = 0.85 + 0.15 * k;
+    c.halos.forEach((h) => {
+      const dim = h.renderOrder === 5 ? 0.6 : 1;
+      h.material.color.copy(dim < 1 ? HIGHLIGHT_BELOW_COLOR : HIGHLIGHT_COLOR);
+      h.material.opacity = (0.45 + 0.5 * k) * dim;
+    });
+  }
+
+  return { group, bodies, constellations, update, setLabelScale, setTelescopeMode, orientMoon, setHighlight, pulseHighlight };
 }
