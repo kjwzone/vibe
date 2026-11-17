@@ -172,6 +172,28 @@ function testNpcRules() {
   }
   checkEqual('npc_cycleStartsAndEndsHome', ok, true);
   checkEqual('npc_pathsAvoidWalls', clear, true);
+  // 관측소 드나들기(R69): 걸음을 0.1m 간격으로 따라가며 직접 본다.
+  const visited = NPC_ROLES.map(() => false);
+  let doorOnly = true;
+  let pierClear = true;
+  for (let i = 0; i < NPC_ROLES.length; i++) {
+    for (let c = 0; c < 30; c++) {
+      buildCycle(i, c).filter((l) => l.type === 'walk').forEach((l) => {
+        const steps = Math.ceil(Math.hypot(l.to.x - l.from.x, l.to.z - l.from.z) / 0.1);
+        for (let s = 0; s <= steps; s++) {
+          const x = l.from.x + ((l.to.x - l.from.x) * s) / steps;
+          const z = l.from.z + ((l.to.z - l.from.z) * s) / steps;
+          const r = Math.hypot(x, z);
+          if (r < 4.5) visited[i] = true;
+          if (Math.abs(r - 6) < 0.3 && Math.abs(Math.atan2(x, z)) * (180 / Math.PI) > 18) doorOnly = false;
+          if (Math.hypot(x, z + 2.5) < 0.6) pierClear = false;
+        }
+      });
+    }
+  }
+  checkEqual('npc_visitsObservatory', visited.every(Boolean), true);
+  checkEqual('npc_crossesWallOnlyAtDoor', doorOnly, true);
+  checkEqual('npc_avoidsTelescopePier', pierClear, true);
   const t = 1_800_000_123.4;
   const a = computeNpcPose(1, t);
   const b = computeNpcPose(1, t, new Map());

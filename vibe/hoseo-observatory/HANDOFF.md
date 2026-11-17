@@ -1,6 +1,6 @@
 # HANDOFF — 우면산 호서 천문대
 
-다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R68)은 `SPEC.md`에 있다.
+다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R69)은 `SPEC.md`에 있다.
 
 작성: 2026-11-12, 고침: 2026-11-17(NPC 추가)
 
@@ -14,7 +14,7 @@
 | 마지막 앱 커밋 | 2026-11-17 "천문대에 NPC 3명 추가" 커밋(`git log -- vibe/hoseo-observatory`로 확인). 그 전 배포 확인은 아래 줄 |
 | 배포 확인 (2026-11-12) | 두 주소 모두 `0cbbf62` 코드가 올라가 있음. `index.html`·`js/constellation-order.js` 200, 새 이름 순서 반영, `SPEC.md` 404(의도대로 비공개) |
 | Vercel 프로젝트 | 팀 `kjwzone71-1940's projects`(team_fhohDdlKVNzPP2OBrFbR9UCv), 프로젝트 `hoseo-observatory`(prj_tn0on5U2XuoCiCXa336HtOxYBtgG), 최신 배포 dpl_DJXPLQEiKtiJiHRWvVqkJJ2FhGAq (READY) |
-| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 54개 통과, 0개 실패 |
+| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 57개 통과, 0개 실패 |
 
 ### 실행과 확인
 - 로컬: `python -m http.server 8765 --directory hoseo-observatory` (vibe 폴더에서). `vibe/.claude/launch.json`의 `observatory` 설정과 같다. ES 모듈이라 `file://`로 열면 안 된다.
