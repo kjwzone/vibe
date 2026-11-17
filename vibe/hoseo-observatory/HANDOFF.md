@@ -1,8 +1,8 @@
 # HANDOFF — 우면산 호서 천문대
 
-다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R60)은 `SPEC.md`에 있다.
+다음 세션이 이 파일부터 읽고 이어받는다. 자세한 결정 기록은 `context-notes.md`, 요구사항과 완료 기준(R1~R67)은 `SPEC.md`에 있다.
 
-작성: 2026-11-12
+작성: 2026-11-12, 고침: 2026-11-17(NPC 추가)
 
 ## 1. 현재 상태
 
@@ -11,10 +11,10 @@
 | 공개 주소 (GitHub Pages) | https://kjwzone.github.io/vibe/hoseo-observatory/ |
 | 공개 주소 (Vercel) | https://hoseo-observatory.vercel.app |
 | 저장소 | https://github.com/kjwzone/vibe (로컬 git 루트는 `C:\Users\HP\hoseo`, 앱은 `vibe/hoseo-observatory/`) |
-| 마지막 앱 커밋 | `0cbbf62` 천문대 SPEC과 작업 기록에 망원경 시야·별자리 정렬·이름 순서 반영 (이 HANDOFF 커밋은 그 뒤) |
+| 마지막 앱 커밋 | 2026-11-17 "천문대에 NPC 3명 추가" 커밋(`git log -- vibe/hoseo-observatory`로 확인). 그 전 배포 확인은 아래 줄 |
 | 배포 확인 (2026-11-12) | 두 주소 모두 `0cbbf62` 코드가 올라가 있음. `index.html`·`js/constellation-order.js` 200, 새 이름 순서 반영, `SPEC.md` 404(의도대로 비공개) |
 | Vercel 프로젝트 | 팀 `kjwzone71-1940's projects`(team_fhohDdlKVNzPP2OBrFbR9UCv), 프로젝트 `hoseo-observatory`(prj_tn0on5U2XuoCiCXa336HtOxYBtgG), 최신 배포 dpl_DJXPLQEiKtiJiHRWvVqkJJ2FhGAq (READY) |
-| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 40개 통과, 0개 실패 |
+| node 테스트 | `node vibe/hoseo-observatory/tests/run-tests.js` → 57개 통과, 0개 실패 |
 
 ### 실행과 확인
 - 로컬: `python -m http.server 8765 --directory hoseo-observatory` (vibe 폴더에서). `vibe/.claude/launch.json`의 `observatory` 설정과 같다. ES 모듈이라 `file://`로 열면 안 된다.
@@ -30,14 +30,15 @@
 | `js/sky.js`, `js/astro.js` | 천구(별·별자리·천체), 천체 위치·고리 기울기·항성시 계산 |
 | `js/planet-art.js`, `js/photo.js`, `js/data/photos.js` | 망원경 속 천체 원반 그림, 최대 확대 시 사진(JWST·허블, 태양·달·수성·금성은 NASA 탐사선) |
 | `js/ui.js`, `js/constellation-order.js`, `js/names.js` | 버튼·목록·카드, 별자리 정렬 3가지, 이름 목록(지명도 순) |
-| `js/net.js` | Trystero(Nostr)로 한 방 접속 |
+| `js/net.js` | Trystero(Nostr)로 한 방 접속. action: pose, greet, npcbow |
+| `js/npc-rules.js`, `js/npc.js` | NPC 규칙(인원·10분 주기 일정·인사 판단, 순수 함수와 테스트), NPC 캐릭터 표시와 인사 |
 | `js/sound.js` | 도로 백색 소음 + 무작위 부엉이 |
 | `js/data/stars.js`, `js/data/geo.js` | BSC5 별 904개·별자리 20개, 인트로 지도 윤곽 |
 | `CREDITS.md`, `sounds/CREDITS.md` | 외부 데이터·사진·소리·라이브러리 출처 |
 
 ## 2. 결정한 사항과 이유 (요약)
 
-전체는 `SPEC.md`의 결정 표(D1~D21)와 `context-notes.md`에 있다.
+전체는 `SPEC.md`의 결정 표(D1~D22)와 `context-notes.md`에 있다.
 
 | 결정 | 이유 |
 |---|---|
@@ -52,6 +53,7 @@
 | 이름 목록은 영문 위키백과 12개월 조회수 순, 고른 이름은 localStorage에 기억, 겹치면 나중에 가진 쪽(nameAt)이 양보 | 사용자 요청과, 먼저 들어온 사람이 남의 이름을 빼앗지 않게 |
 | 별자리 목록 정렬 3가지(잘 보이는 순 기본, 자오선 순, 묶음·황도 순) | 사용자 요청 |
 | SPEC의 R 번호는 지우지 않고 "(삭제)"로 비움(R21, R29, R30) | PROMPTS·checklist·과거 보고와 번호가 어긋나지 않게 |
+| NPC 0~3명(사람과 합쳐 4명), 역할 이름, 걷기·하늘 보기·먼저 인사·답례 무작위. 위치는 현재 시각과 고정 씨앗으로 계산해 모두에게 같게, 인사만 `npcbow` 신호 | 혼자 들어오면 외로워 보여서(D22). 위치를 주고받지 않아 누가 나가도 이어짐 |
 
 ## 3. 남은 작업
 
@@ -73,5 +75,6 @@
 - **Vercel 주소**: `hoseo-observatory.vercel.app`은 공개. 팀 이름이 붙은 `…-kjwzone71-1940s-projects.vercel.app` 주소들은 Vercel 기본 보호로 로그인해야 열린다(정상).
 - **출처 표시**: 서초구 경계(geoBoundaries, CC BY 3.0)와 JWST·허블 사진(CC BY 4.0)은 출처를 지우면 안 된다. 사진 출처는 화면(사진 아래)과 CREDITS.md 두 곳에 있다.
 - **브라우저 확인 요령**: 내장 브라우저 창이 숨겨지면 rAF가 거의 멈춰 인트로·회전이 아주 느리다. 로컬 서버는 모듈을 캐시하므로 고친 뒤 `fetch('/js/파일.js', {cache:'reload'})` 후 새로고침한다. 확인용 임시 전역(`window.__obs` 등)은 Z1에서 모두 지웠다. 필요하면 다시 넣고 확인 뒤 지운다.
+- **NPC 확인 요령**: 공개 방에 실제 사람이 3명 넘게 있으면 규칙대로 NPC가 0명이다. 혼자일 때 모습을 보려면 사람 수를 바꾸는 임시 수단(예: `npcs.update`에 넘기는 사람 수)을 잠깐 넣고 확인 뒤 지운다. NPC 위치는 각 컴퓨터 시계로 계산하므로 시계가 어긋나면 조금 다르게 보인다.
 - **알려진 경고**: 콘솔에 `wss://relay.bullishbounty.com` 연결 실패가 반복된다. Trystero 기본 중계 하나가 죽은 것이고 다른 중계로 연결되므로 기능에는 영향이 없다.
 - **알려진 한계**: 5분 넘게 숨긴 탭은 다른 사람 화면에서 잠시 사라질 수 있다. 대적점·화성 무늬 위치는 실제 자전 위치가 아니다. 고리는 기울기만 실제 값이고 화면에서 늘 가로다. 내장 브라우저는 `kjwzone.github.io`, `vercel.app`을 열 수 없어서 공개 화면은 curl로만 확인했다.
