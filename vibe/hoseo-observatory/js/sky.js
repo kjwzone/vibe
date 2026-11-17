@@ -77,7 +77,7 @@ function createStarLayer(group, texture) {
 // 고른 별자리를 빛나게 할 때 쓰는 색과 빛무리 크기
 const HIGHLIGHT_COLOR = new THREE.Color('#ffd98a');
 const HIGHLIGHT_BELOW_COLOR = new THREE.Color('#c9b07a');
-const HALO_SIZE = 18;
+const HALO_SIZE = 12;
 const HIGHLIGHT_PERIOD_S = 3;
 
 function createConstellations(group, haloTexture) {
