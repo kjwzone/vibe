@@ -127,8 +127,8 @@ const net = connectRoom({
   onNpcBow: ({ index }) => npcs.showBow(index),
 });
 
-// NPC: 실제 사람과 합쳐 4명이 되도록 0~3명을 둔다. 움직임은 시각으로 정해져 모두에게 같게 보이고,
-// 인사만 신호로 알린다(R64~R67). 입장 조망의 사람 수에는 세지 않는다.
+// NPC: 사람 수와 상관없이 늘 3명을 둔다. 움직임은 시각으로 정해져 모두에게 같게 보이고,
+// 인사만 신호로 알린다(R64, R66, R67). 입장 조망의 사람 수에는 세지 않는다.
 const npcs = createNpcs({ scene: world.scene, sendBow: (index) => net.sendNpcBow(index) });
 function sendPoseIfNeeded(now) {
   const pose = getPose();
@@ -335,7 +335,7 @@ function renderFrame(timestamp) {
   myCharacter.update(dt);
   updatePeers(dt);
   // 인트로 동안에도 NPC는 움직이지만, 먼저 인사는 천문대 화면에서만 한다.
-  npcs.update(dt, peers.size + 1, mode === 'observatory' ? controls.position : null);
+  npcs.update(dt, mode === 'observatory' ? controls.position : null);
   sky.group.position.copy(camera.position);
   renderer.render(target.scene, target.camera);
 }

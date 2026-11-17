@@ -1,4 +1,4 @@
-// NPC 규칙(순수 함수): 몇 명 둘지, 시각으로 정해지는 걷기·하늘 보기 일정, 먼저 인사·답례 판단
+// NPC 규칙(순수 함수): 시각으로 정해지는 걷기·하늘 보기 일정, 먼저 인사·답례 판단. NPC는 늘 3명이다.
 // 일정은 현재 시각(초)과 고정된 씨앗으로만 정해지므로, 모든 접속자 화면에서 같은 NPC가 같은 자리에 있다.
 
 export const NPC_ROLES = [
@@ -6,7 +6,6 @@ export const NPC_ROLES = [
   { name: '별 보러 온 학생', color: '#f0b46a', home: { x: -9, z: 9 } },
   { name: '동네 등산객', color: '#8cc48e', home: { x: 10, z: -9 } },
 ];
-export const NPC_TOTAL_WITH_PEOPLE = 4;
 export const NPC_SPEED = 1.1;
 export const NPC_CYCLE_S = 600;
 const LOOK_MIN_S = 20;
@@ -20,11 +19,6 @@ const OBSTACLES = [
 ];
 export const GREET_FIRST_DIST = 4;
 export const RETURN_BOW_DIST = 10;
-
-// 실제 사람과 합쳐 4명이 되도록 NPC를 0~3명 둔다.
-export function computeNpcCount(people) {
-  return Math.max(0, Math.min(NPC_ROLES.length, NPC_TOTAL_WITH_PEOPLE - people));
-}
 
 // 같은 씨앗이면 같은 수열을 내는 난수(mulberry32)
 export function createRandom(seed) {

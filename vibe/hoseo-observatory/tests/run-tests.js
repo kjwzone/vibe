@@ -4,7 +4,7 @@ import { POLARIS } from '../js/data/stars.js';
 import { NAMES, pickName, shouldYieldName } from '../js/names.js';
 import { sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac, ZODIAC_ORDER } from '../js/constellation-order.js';
 import { CONSTELLATIONS } from '../js/data/stars.js';
-import { NPC_ROLES, NPC_CYCLE_S, computeNpcCount, buildCycle, isPathClear, computeNpcPose, shouldGreetFirst, shouldReturnBow } from '../js/npc-rules.js';
+import { NPC_ROLES, NPC_CYCLE_S, buildCycle, isPathClear, computeNpcPose, shouldGreetFirst, shouldReturnBow } from '../js/npc-rules.js';
 import { computeOverviewPose, OVERVIEW_HOLD, OVERVIEW_END } from '../js/overview.js';
 import { pickStartPosition, SPAWN_MAX_RADIUS, SPAWN_TELESCOPE_GAP } from '../js/spawn.js';
 
@@ -152,12 +152,9 @@ function testStartPosition() {
 
 testStartPosition();
 testOverviewPose();
-// NPC: 사람 수에 따른 인원, 일정의 연속성(집에서 시작·끝), 벽을 피하는 길, 같은 시각 같은 자리, 인사 판단
+// NPC: 늘 3명, 일정의 연속성(집에서 시작·끝), 벽을 피하는 길, 같은 시각 같은 자리, 인사 판단
 function testNpcRules() {
-  checkEqual('npc_aloneThree', computeNpcCount(1), 3);
-  checkEqual('npc_twoPeopleTwo', computeNpcCount(2), 2);
-  checkEqual('npc_fourPeopleNone', computeNpcCount(4), 0);
-  checkEqual('npc_manyPeopleNone', computeNpcCount(9), 0);
+  checkEqual('npc_alwaysThree', NPC_ROLES.length, 3);
   let ok = true;
   let clear = true;
   for (let i = 0; i < NPC_ROLES.length; i++) {
