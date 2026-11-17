@@ -4,6 +4,7 @@ import { POLARIS } from '../js/data/stars.js';
 import { NAMES, pickName, shouldYieldName } from '../js/names.js';
 import { sortByVisibility, sortByMeridian, computeHoursToTransit, groupByZodiac, ZODIAC_ORDER } from '../js/constellation-order.js';
 import { CONSTELLATIONS } from '../js/data/stars.js';
+import { NPC_ROLES, NPC_CYCLE_S, computeNpcCount, buildCycle, isPathClear, computeNpcPose, shouldGreetFirst, shouldReturnBow } from '../js/npc-rules.js';
 import { computeOverviewPose, OVERVIEW_HOLD, OVERVIEW_END } from '../js/overview.js';
 import { pickStartPosition, SPAWN_MAX_RADIUS, SPAWN_TELESCOPE_GAP } from '../js/spawn.js';
 
@@ -151,6 +152,44 @@ function testStartPosition() {
 
 testStartPosition();
 testOverviewPose();
+// NPC: 사람 수에 따른 인원, 일정의 연속성(집에서 시작·끝), 벽을 피하는 길, 같은 시각 같은 자리, 인사 판단
+function testNpcRules() {
+  checkEqual('npc_aloneThree', computeNpcCount(1), 3);
+  checkEqual('npc_twoPeopleTwo', computeNpcCount(2), 2);
+  checkEqual('npc_fourPeopleNone', computeNpcCount(4), 0);
+  checkEqual('npc_manyPeopleNone', computeNpcCount(9), 0);
+  let ok = true;
+  let clear = true;
+  for (let i = 0; i < NPC_ROLES.length; i++) {
+    for (let c = 0; c < 30; c++) {
+      const legs = buildCycle(i, c);
+      const home = NPC_ROLES[i].home;
+      const first = legs[0];
+      const last = legs[legs.length - 1];
+      if (first.from !== home || last.to !== home || first.t0 !== 0 || Math.abs(last.t1 - NPC_CYCLE_S) > 1e-6) ok = false;
+      legs.forEach((l, k) => {
+        if (k > 0 && Math.abs(l.t0 - legs[k - 1].t1) > 1e-6) ok = false;
+        if (l.type === 'walk' && !isPathClear(l.from, l.to)) clear = false;
+      });
+    }
+  }
+  checkEqual('npc_cycleStartsAndEndsHome', ok, true);
+  checkEqual('npc_pathsAvoidWalls', clear, true);
+  const t = 1_800_000_123.4;
+  const a = computeNpcPose(1, t);
+  const b = computeNpcPose(1, t, new Map());
+  checkEqual('npc_sameTimeSamePlace', `${a.x.toFixed(3)},${a.z.toFixed(3)}`, `${b.x.toFixed(3)},${b.z.toFixed(3)}`);
+  const end = computeNpcPose(0, NPC_CYCLE_S * 5 - 0.001);
+  const start = computeNpcPose(0, NPC_CYCLE_S * 5);
+  checkNear('npc_noJumpAtCycleEdge', Math.hypot(end.x - start.x, end.z - start.z), 0, 0.01);
+  checkEqual('npc_greetFirstNear', shouldGreetFirst(3, false, 0.2), true);
+  checkEqual('npc_greetFirstOnlyOnce', shouldGreetFirst(3, true, 0.2), false);
+  checkEqual('npc_greetFirstNotFar', shouldGreetFirst(6, false, 0.2), false);
+  checkEqual('npc_returnBowNear', shouldReturnBow(8, 0.5), true);
+  checkEqual('npc_returnBowNotFar', shouldReturnBow(12, 0.1), false);
+}
+
+testNpcRules();
 testConstellationOrder();
 testRingOpening();
 testSeparation();

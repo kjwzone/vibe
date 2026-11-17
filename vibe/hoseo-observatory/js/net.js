@@ -1,17 +1,20 @@
-// Trystero로 같은 링크의 사람들과 위치·이름·인사를 주고받는다(사이트 전체가 한 방, D3)
+// Trystero로 같은 링크의 사람들과 위치·이름·인사·NPC 인사를 주고받는다(사이트 전체가 한 방, D3)
 import { joinRoom, selfId } from '../vendor/trystero.mjs';
 
 const APP_ID = 'hoseo-observatory-umyeonsan';
 const ROOM_ID = 'main';
 
 // 방에 들어간다. 연결에 실패해도 오류를 띄우지 않고 혼자 보기를 그대로 둔다.
-export function connectRoom({ onPose, onGreet, onLeave, onJoin }) {
+export function connectRoom({ onPose, onGreet, onLeave, onJoin, onNpcBow = () => {} }) {
   try {
     const room = joinRoom({ appId: APP_ID }, ROOM_ID);
     const pose = room.makeAction('pose');
     const greet = room.makeAction('greet');
+    // NPC 인사: NPC의 위치는 시각으로 모두 같게 계산하므로, 인사만 신호로 알린다.
+    const npcBow = room.makeAction('npcbow');
     pose.onMessage = (data, { peerId }) => onPose(peerId, data);
     greet.onMessage = (_data, { peerId }) => onGreet(peerId);
+    npcBow.onMessage = (data) => onNpcBow(data);
     room.onPeerJoin = (peerId) => onJoin(peerId);
     room.onPeerLeave = (peerId) => onLeave(peerId);
     window.addEventListener('pagehide', () => room.leave());
@@ -23,9 +26,12 @@ export function connectRoom({ onPose, onGreet, onLeave, onJoin }) {
       sendGreet() {
         greet.send({}).catch(() => {});
       },
+      sendNpcBow(index) {
+        npcBow.send({ index }).catch(() => {});
+      },
     };
   } catch (err) {
     console.warn('함께 있기 연결 실패, 혼자 보기로 계속합니다.', err);
-    return { selfId, sendPose() {}, sendGreet() {} };
+    return { selfId, sendPose() {}, sendGreet() {}, sendNpcBow() {} };
   }
 }

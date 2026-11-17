@@ -12,6 +12,7 @@ import { createSound } from './sound.js';
 import { createPhotoViewer, hasPhoto } from './photo.js';
 import { computeSeparation } from './astro.js';
 import { pickStartPosition } from './spawn.js';
+import { createNpcs } from './npc.js';
 
 const SKY_UPDATE_MS = 10000;
 const POSE_SEND_MS = 200;
@@ -123,8 +124,12 @@ const net = connectRoom({
   onGreet: (peerId) => peers.get(peerId)?.character.bow(),
   onLeave: removePeer,
   onJoin: (peerId) => net.sendPose(getPose(), peerId),
+  onNpcBow: ({ index }) => npcs.showBow(index),
 });
 
+// NPC: 실제 사람과 합쳐 4명이 되도록 0~3명을 둔다. 움직임은 시각으로 정해져 모두에게 같게 보이고,
+// 인사만 신호로 알린다(R64~R67). 입장 조망의 사람 수에는 세지 않는다.
+const npcs = createNpcs({ scene: world.scene, sendBow: (index) => net.sendNpcBow(index) });
 function sendPoseIfNeeded(now) {
   const pose = getPose();
   const key = `${pose.x},${pose.z},${pose.yaw},${pose.name}`;
@@ -275,6 +280,7 @@ function startObservatory() {
       onGreet: () => {
         myCharacter.bow();
         net.sendGreet();
+        npcs.answerGreeting(controls.position);
       },
       onSound: toggleSound,
       getNames: () => ({ all: NAMES, used: getUsedNames(), mine: me.name }),
@@ -328,6 +334,8 @@ function renderFrame(timestamp) {
   }
   myCharacter.update(dt);
   updatePeers(dt);
+  // 인트로 동안에도 NPC는 움직이지만, 먼저 인사는 천문대 화면에서만 한다.
+  npcs.update(dt, peers.size + 1, mode === 'observatory' ? controls.position : null);
   sky.group.position.copy(camera.position);
   renderer.render(target.scene, target.camera);
 }
